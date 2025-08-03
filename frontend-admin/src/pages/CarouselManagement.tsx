@@ -16,6 +16,7 @@ import {
   Loader2
 } from 'lucide-react'
 import { apiService, CarouselSlide } from '../services/api'
+import PageLayout from '../components/PageLayout'
 
 
 
@@ -187,34 +188,14 @@ const CarouselManagement = () => {
   }
 
   return (
-    <div className="p-6">
-      {/* Header */}
-      <motion.div
-        className="mb-8"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-widest uppercase mb-2">
-              Gestão do Carrossel
-            </h1>
-            <p className="text-metal-text-secondary">
-              Gerencie os slides do carrossel principal do site
-            </p>
-          </div>
-          <motion.button
-            onClick={handleAddSlide}
-            className="btn-primary flex items-center gap-2"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Plus className="w-5 h-5" />
-            Adicionar Slide
-          </motion.button>
-        </div>
-      </motion.div>
+    <PageLayout
+      title="Gestão do Carrossel"
+      subtitle="Gerencie os slides do carrossel principal do site"
+      showAddButton={true}
+      onAddClick={handleAddSlide}
+      addButtonLabel="Adicionar Slide"
+      loading={loading}
+    >
 
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -654,7 +635,7 @@ const CarouselManagement = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </PageLayout>
   )
 }
 

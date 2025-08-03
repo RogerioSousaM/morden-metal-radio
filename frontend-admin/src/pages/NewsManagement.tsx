@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { 
   Plus, 
@@ -10,11 +10,14 @@ import {
   User, 
   FileText,
   Search,
-  // Filter,
   Save,
-  X
+  X,
+  AlertCircle
 } from 'lucide-react'
 import { apiService } from '@/services/api'
+import PageLayout from '../components/PageLayout'
+import Card from '../components/ui/Card'
+import Modal from '../components/ui/Modal'
 
 interface News {
   id: number
@@ -35,6 +38,7 @@ const NewsManagement = () => {
   const [editingNews, setEditingNews] = useState<News | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterPublished, setFilterPublished] = useState<'all' | 'published' | 'draft'>('all')
+  const [saving, setSaving] = useState(false)
 
   const [formData, setFormData] = useState({
     title: '',
@@ -63,6 +67,8 @@ const NewsManagement = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
+    
     try {
       if (editingNews) {
         await apiService.updateNews(editingNews.id, formData)
@@ -76,6 +82,8 @@ const NewsManagement = () => {
     } catch (error) {
       setError('Erro ao salvar notícia')
       console.error('Erro ao salvar notícia:', error)
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -113,10 +121,21 @@ const NewsManagement = () => {
     })
   }
 
+  const handleAddNew = () => {
+    setEditingNews(null)
+    resetForm()
+    setShowForm(true)
+  }
+
+  const handleCloseModal = () => {
+    setShowForm(false)
+    setEditingNews(null)
+    resetForm()
+  }
+
   const filteredNews = news.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.content.toLowerCase().includes(searchTerm.toLowerCase())
-    
     const matchesFilter = filterPublished === 'all' || 
                          (filterPublished === 'published' && item.isPublished) ||
                          (filterPublished === 'draft' && !item.isPublished)
@@ -124,50 +143,91 @@ const NewsManagement = () => {
     return matchesSearch && matchesFilter
   })
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-metal-orange/30 border-t-metal-orange rounded-full animate-spin"></div>
-      </div>
-    )
-  }
+  const stats = [
+    {
+      title: 'Total de Notícias',
+      value: news.length.toString(),
+      icon: FileText,
+      color: 'from-metal-orange to-orange-600'
+    },
+    {
+      title: 'Publicadas',
+      value: news.filter(n => n.isPublished).length.toString(),
+      icon: Eye,
+      color: 'from-green-500 to-green-600'
+    },
+    {
+      title: 'Rascunhos',
+      value: news.filter(n => !n.isPublished).length.toString(),
+      icon: EyeOff,
+      color: 'from-metal-accent to-blue-600'
+    },
+    {
+      title: 'Este Mês',
+      value: news.filter(n => {
+        const createdAt = new Date(n.createdAt)
+        const now = new Date()
+        return createdAt.getMonth() === now.getMonth() && createdAt.getFullYear() === now.getFullYear()
+      }).length.toString(),
+      icon: Calendar,
+      color: 'from-purple-500 to-purple-600'
+    }
+  ]
 
   return (
-    <div className="p-6">
-      {/* Header */}
-      <motion.div
-        className="mb-8"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-widest uppercase mb-2">
-              Gestão de Notícias
-            </h1>
-            <p className="text-metal-text-secondary">
-              Gerencie as notícias do site
-            </p>
-          </div>
-          <motion.button
-            className="btn-primary flex items-center gap-2"
-            onClick={() => {
-              setShowForm(true)
-              setEditingNews(null)
-              resetForm()
-            }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+    <PageLayout
+      title="Gestão de Notícias"
+      subtitle="Gerencie as notícias e artigos do site"
+      showAddButton={true}
+      onAddClick={handleAddNew}
+      addButtonLabel="Nova Notícia"
+      loading={loading}
+    >
+      {/* Error Message */}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="p-4 rounded-lg border bg-red-500/10 border-red-500/30 text-red-400"
           >
-            <Plus className="w-5 h-5" />
-            Nova Notícia
-          </motion.button>
-        </div>
-      </motion.div>
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5" />
+              <span>{error}</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {stats.map((stat, index) => {
+          const Icon = stat.icon
+          return (
+            <Card
+              key={stat.title}
+              delay={index * 0.1}
+              className="p-6"
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-lg flex items-center justify-center`}>
+                  <Icon className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-metal-text">
+                    {stat.value}
+                  </p>
+                  <p className="text-sm text-metal-text-secondary">{stat.title}</p>
+                </div>
+              </div>
+            </Card>
+          )
+        })}
+      </div>
 
       {/* Filtros e Busca */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-metal-text-secondary" />
           <input
@@ -175,13 +235,13 @@ const NewsManagement = () => {
             placeholder="Buscar notícias..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-metal-card border border-metal-light-gray/20 rounded-lg text-metal-text placeholder-metal-text-secondary focus:outline-none focus:ring-2 focus:ring-metal-orange"
+            className="form-input pl-10"
           />
         </div>
         <select
           value={filterPublished}
           onChange={(e) => setFilterPublished(e.target.value as any)}
-          className="px-4 py-2 bg-metal-card border border-metal-light-gray/20 rounded-lg text-metal-text focus:outline-none focus:ring-2 focus:ring-metal-orange"
+          className="form-select"
         >
           <option value="all">Todas</option>
           <option value="published">Publicadas</option>
@@ -189,219 +249,180 @@ const NewsManagement = () => {
         </select>
       </div>
 
-      {/* Formulário */}
-      {showForm && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-metal-card border border-metal-light-gray/20 rounded-lg p-6"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-metal-text">
-              {editingNews ? 'Editar Notícia' : 'Nova Notícia'}
-            </h3>
-            <button
-              onClick={() => {
-                setShowForm(false)
-                setEditingNews(null)
-                resetForm()
-              }}
-              className="text-metal-text-secondary hover:text-metal-text"
-            >
-              <X className="w-5 h-5" />
-            </button>
+      {/* Lista de Notícias */}
+      <div className="bg-metal-card rounded-lg border border-metal-light-gray/20 overflow-hidden">
+        <div className="p-6 border-b border-metal-light-gray/20">
+          <h3 className="text-lg font-semibold text-metal-text">Notícias</h3>
+        </div>
+        
+        {filteredNews.length === 0 ? (
+          <div className="p-12 text-center">
+            <FileText className="w-16 h-16 text-metal-text-secondary mx-auto mb-4" />
+            <p className="text-metal-text-secondary">Nenhuma notícia encontrada</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-metal-light-gray/20">
+            {filteredNews.map((item, index) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="p-6 hover:bg-metal-gray/30 transition-colors"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-4 flex-1">
+                    {item.image && (
+                      <div className="w-16 h-16 bg-metal-gray rounded-lg flex items-center justify-center flex-shrink-0">
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h4 className="font-medium text-metal-text truncate">{item.title}</h4>
+                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          item.isPublished 
+                            ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                            : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                        }`}>
+                          {item.isPublished ? 'Publicada' : 'Rascunho'}
+                        </div>
+                      </div>
+                      <p className="text-sm text-metal-text-secondary line-clamp-2 mb-2">
+                        {item.content}
+                      </p>
+                      <div className="flex items-center gap-4 text-xs text-metal-text-secondary">
+                        <div className="flex items-center gap-1">
+                          <User className="w-3 h-3" />
+                          <span>{item.author}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          <span>{new Date(item.createdAt).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 ml-4">
+                    <button
+                      onClick={() => handleEdit(item)}
+                      className="p-2 text-metal-text-secondary hover:text-metal-orange transition-colors"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      className="p-2 text-metal-text-secondary hover:text-metal-red transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Formulário Modal */}
+      <Modal
+        isOpen={showForm}
+        onClose={handleCloseModal}
+        title={editingNews ? 'Editar Notícia' : 'Nova Notícia'}
+        size="lg"
+      >
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="form-label">Título</label>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              className="form-input"
+              placeholder="Digite o título da notícia"
+              required
+            />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-metal-text-secondary mb-2">
-                Título
-              </label>
-              <input
-                type="text"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-4 py-2 bg-metal-dark border border-metal-light-gray/20 rounded-lg text-metal-text focus:outline-none focus:ring-2 focus:ring-metal-orange"
-                required
-              />
-            </div>
+          <div>
+            <label className="form-label">Conteúdo</label>
+            <textarea
+              value={formData.content}
+              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              className="form-textarea"
+              rows={6}
+              placeholder="Digite o conteúdo da notícia..."
+              required
+            />
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-metal-text-secondary mb-2">
-                Conteúdo
-              </label>
-              <textarea
-                value={formData.content}
-                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                rows={6}
-                className="w-full px-4 py-2 bg-metal-dark border border-metal-light-gray/20 rounded-lg text-metal-text focus:outline-none focus:ring-2 focus:ring-metal-orange"
-                required
-              />
-            </div>
+          <div>
+            <label className="form-label">URL da Imagem</label>
+            <input
+              type="url"
+              value={formData.image}
+              onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+              className="form-input"
+              placeholder="https://exemplo.com/imagem.jpg"
+            />
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-metal-text-secondary mb-2">
-                URL da Imagem
-              </label>
-              <input
-                type="url"
-                value={formData.image}
-                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                className="w-full px-4 py-2 bg-metal-dark border border-metal-light-gray/20 rounded-lg text-metal-text focus:outline-none focus:ring-2 focus:ring-metal-orange"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-metal-text-secondary mb-2">
-                Autor
-              </label>
+              <label className="form-label">Autor</label>
               <input
                 type="text"
                 value={formData.author}
                 onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-                className="w-full px-4 py-2 bg-metal-dark border border-metal-light-gray/20 rounded-lg text-metal-text focus:outline-none focus:ring-2 focus:ring-metal-orange"
+                className="form-input"
+                placeholder="Nome do autor"
                 required
               />
             </div>
-
-            <div className="flex items-center gap-2">
+            
+            <div className="flex items-center gap-3">
               <input
                 type="checkbox"
                 id="isPublished"
                 checked={formData.isPublished}
                 onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
-                className="w-4 h-4 text-metal-orange bg-metal-dark border-metal-light-gray/20 rounded focus:ring-metal-orange"
+                className="form-checkbox"
               />
               <label htmlFor="isPublished" className="text-sm text-metal-text-secondary">
                 Publicar imediatamente
               </label>
             </div>
-
-            <div className="flex gap-3">
-              <button
-                type="submit"
-                className="flex items-center gap-2 px-4 py-2 bg-metal-orange hover:bg-metal-orange/90 text-white rounded-lg transition-colors"
-              >
-                <Save className="w-4 h-4" />
-                {editingNews ? 'Atualizar' : 'Criar'}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowForm(false)
-                  setEditingNews(null)
-                  resetForm()
-                }}
-                className="px-4 py-2 bg-metal-light-gray/20 hover:bg-metal-light-gray/30 text-metal-text rounded-lg transition-colors"
-              >
-                Cancelar
-              </button>
-            </div>
-          </form>
-        </motion.div>
-      )}
-
-      {/* Lista de Notícias */}
-      <div className="bg-metal-card border border-metal-light-gray/20 rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-metal-dark/50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-metal-text-secondary uppercase tracking-wider">
-                  Título
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-metal-text-secondary uppercase tracking-wider">
-                  Autor
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-metal-text-secondary uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-metal-text-secondary uppercase tracking-wider">
-                  Data
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-metal-text-secondary uppercase tracking-wider">
-                  Ações
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-metal-light-gray/20">
-              {filteredNews.map((newsItem) => (
-                <tr key={newsItem.id} className="hover:bg-metal-dark/30">
-                  <td className="px-6 py-4">
-                    <div>
-                      <div className="text-sm font-medium text-metal-text">{newsItem.title}</div>
-                      <div className="text-sm text-metal-text-secondary truncate max-w-xs">
-                        {newsItem.content.substring(0, 100)}...
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-metal-text-secondary">
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4" />
-                      {newsItem.author}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${
-                      newsItem.isPublished 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {newsItem.isPublished ? (
-                        <>
-                          <Eye className="w-3 h-3" />
-                          Publicada
-                        </>
-                      ) : (
-                        <>
-                          <EyeOff className="w-3 h-3" />
-                          Rascunho
-                        </>
-                      )}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-metal-text-secondary">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
-                      {new Date(newsItem.createdAt).toLocaleDateString('pt-BR')}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-right text-sm font-medium">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleEdit(newsItem)}
-                        className="text-metal-orange hover:text-metal-orange/80 transition-colors"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(newsItem.id)}
-                        className="text-red-500 hover:text-red-400 transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {filteredNews.length === 0 && (
-          <div className="text-center py-12">
-            <FileText className="w-12 h-12 text-metal-text-secondary mx-auto mb-4" />
-            <p className="text-metal-text-secondary">Nenhuma notícia encontrada</p>
           </div>
-        )}
-      </div>
 
-      {error && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-lg">
-          {error}
-        </div>
-      )}
-    </div>
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-metal-border">
+            <button
+              type="button"
+              onClick={handleCloseModal}
+              className="btn-secondary"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="btn-primary flex items-center gap-2"
+            >
+              {saving ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
+              {saving ? 'Salvando...' : (editingNews ? 'Atualizar' : 'Criar')}
+            </button>
+          </div>
+        </form>
+      </Modal>
+    </PageLayout>
   )
 }
 

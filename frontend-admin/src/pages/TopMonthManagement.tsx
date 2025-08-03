@@ -1,10 +1,13 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Plus, Edit, Trash2, Star, Music, Save, X, TrendingUp, 
-  Play, Link, Image as ImageIcon, Loader2
+  Play, Link, Image as ImageIcon, Loader2, AlertCircle
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { apiService, type TopMonthConfig, type TopMonthBand } from '../services/api'
+import PageLayout from '../components/PageLayout'
+import Card from '../components/ui/Card'
+import Modal from '../components/ui/Modal'
 
 const TopMonthManagement = () => {
   const [config, setConfig] = useState<TopMonthConfig | null>(null)
@@ -99,12 +102,7 @@ const TopMonthManagement = () => {
       await loadData() // Recarregar dados
       setShowBandModal(false)
       setEditingBand(null)
-      setBandForm({
-        name: '',
-        genre: '',
-        description: '',
-        image: ''
-      })
+      setBandForm({ name: '', genre: '', description: '', image: '' })
     } catch (error) {
       console.error('Erro ao salvar banda:', error)
       setError('Erro ao salvar banda')
@@ -113,18 +111,23 @@ const TopMonthManagement = () => {
 
   const handleEditBand = (band: TopMonthBand) => {
     setEditingBand(band)
-    setBandForm(band)
+    setBandForm({
+      name: band.name,
+      genre: band.genre,
+      description: band.description,
+      image: band.image
+    })
     setShowBandModal(true)
   }
 
   const handleDeleteBand = async (id: number) => {
-    if (confirm('Tem certeza que deseja excluir esta banda?')) {
+    if (window.confirm('Tem certeza que deseja excluir esta banda?')) {
       try {
         await apiService.deleteTopMonthBand(id)
-        await loadData() // Recarregar dados
+        await loadData()
       } catch (error) {
-        console.error('Erro ao deletar banda:', error)
-        setError('Erro ao deletar banda')
+        console.error('Erro ao excluir banda:', error)
+        setError('Erro ao excluir banda')
       }
     }
   }
@@ -133,437 +136,425 @@ const TopMonthManagement = () => {
     if (count >= 1000000) {
       return `${(count / 1000000).toFixed(1)}M`
     } else if (count >= 1000) {
-      return `${(count / 1000).toFixed(1)}k`
+      return `${(count / 1000).toFixed(1)}K`
     }
     return count.toString()
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-metal-dark text-metal-text flex items-center justify-center">
-        <div className="flex items-center gap-3">
-          <Loader2 className="w-6 h-6 animate-spin text-metal-orange" />
-          <span>Carregando...</span>
-        </div>
-      </div>
-    )
+  const handleAddNew = () => {
+    setShowConfigModal(true)
   }
 
-  return (
-    <div className="p-6">
-        {/* Header */}
-        <motion.div 
-          className="mb-8"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-widest uppercase mb-2">
-                Gestão do Top do Mês
-              </h1>
-              <p className="text-metal-text-secondary">
-                Configure a banda em destaque e suas estatísticas
-              </p>
-            </div>
-            <motion.button
-              onClick={() => setShowConfigModal(true)}
-              className="btn-primary flex items-center gap-2"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <TrendingUp className="w-5 h-5" />
-              Configurar Top do Mês
-            </motion.button>
-          </div>
-        </motion.div>
+  const handleAddBand = () => {
+    setEditingBand(null)
+    setBandForm({ name: '', genre: '', description: '', image: '' })
+    setShowBandModal(true)
+  }
 
+  const stats = [
+    {
+      title: 'Total de Bandas',
+      value: bands.length.toString(),
+      icon: Music,
+      color: 'from-metal-orange to-orange-600'
+    },
+    {
+      title: 'Configuração Ativa',
+      value: config?.isActive ? 'Sim' : 'Não',
+      icon: Star,
+      color: config?.isActive ? 'from-green-500 to-green-600' : 'from-red-500 to-red-600'
+    },
+    {
+      title: 'Reproduções',
+      value: config ? formatPlayCount(config.playCount) : '0',
+      icon: Play,
+      color: 'from-metal-accent to-blue-600'
+    },
+    {
+      title: 'Banda Atual',
+      value: config?.bandName || 'Nenhuma',
+      icon: TrendingUp,
+      color: 'from-purple-500 to-purple-600'
+    }
+  ]
+
+  return (
+    <PageLayout
+      title="Gestão do Top do Mês"
+      subtitle="Configure a banda em destaque e suas estatísticas"
+      showAddButton={true}
+      onAddClick={handleAddNew}
+      addButtonLabel="Configurar Top do Mês"
+      loading={loading}
+    >
+      {/* Error Message */}
+      <AnimatePresence>
         {error && (
-          <motion.div 
-            className="mb-6 bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg"
+          <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="p-4 rounded-lg border bg-red-500/10 border-red-500/30 text-red-400"
           >
-            {error}
-          </motion.div>
-        )}
-
-        {/* Configuração Atual */}
-        {config && (
-          <motion.div 
-            className="mb-8 bg-metal-card border border-metal-orange/30 rounded-lg p-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <Star className="w-6 h-6 text-metal-orange" />
-              <h2 className="text-xl font-bold">Configuração Atual</h2>
-              <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                config.isActive 
-                  ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                  : 'bg-red-500/20 text-red-400 border border-red-500/30'
-              }`}>
-                {config.isActive ? 'Ativo' : 'Inativo'}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-metal-orange/20 to-metal-accent/20 rounded-lg flex items-center justify-center">
-                  <Music className="w-6 h-6 text-metal-orange" />
-                </div>
-                <div>
-                  <p className="text-metal-text-secondary text-sm">Banda</p>
-                  <p className="font-bold">{config.bandName}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-metal-accent/20 to-metal-orange/20 rounded-lg flex items-center justify-center">
-                  <ImageIcon className="w-6 h-6 text-metal-accent" />
-                </div>
-                <div>
-                  <p className="text-metal-text-secondary text-sm">Álbum</p>
-                  <p className="font-bold">{config.albumName}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-500/20 to-green-400/20 rounded-lg flex items-center justify-center">
-                  <Play className="w-6 h-6 text-green-400" />
-                </div>
-                <div>
-                  <p className="text-metal-text-secondary text-sm">Reproduções</p>
-                  <p className="font-bold">{formatPlayCount(config.playCount)}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500/20 to-blue-400/20 rounded-lg flex items-center justify-center">
-                  <Link className="w-6 h-6 text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-metal-text-secondary text-sm">Matéria</p>
-                  <p className="font-bold text-sm truncate">{config.newsLink}</p>
-                </div>
-              </div>
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5" />
+              <span>{error}</span>
             </div>
           </motion.div>
         )}
+      </AnimatePresence>
 
-        {/* Lista de Bandas */}
-        <motion.div 
-          className="bg-metal-card border border-metal-border rounded-lg p-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold">Bandas Disponíveis</h2>
-            <motion.button
-              onClick={() => setShowBandModal(true)}
-              className="bg-metal-accent hover:bg-metal-accent/90 text-metal-dark px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+      {/* Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {stats.map((stat, index) => {
+          const Icon = stat.icon
+          return (
+            <Card
+              key={stat.title}
+              delay={index * 0.1}
+              className="p-6"
             >
-              <Plus className="w-4 h-4" />
-              Nova Banda
-            </motion.button>
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-lg flex items-center justify-center`}>
+                  <Icon className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-metal-text">
+                    {stat.value}
+                  </p>
+                  <p className="text-sm text-metal-text-secondary">{stat.title}</p>
+                </div>
+              </div>
+            </Card>
+          )
+        })}
+      </div>
+
+      {/* Configuração Atual */}
+      {config && (
+        <Card delay={0.2} className="mb-8 p-6 border border-metal-orange/30">
+          <div className="flex items-center gap-3 mb-4">
+            <Star className="w-6 h-6 text-metal-orange" />
+            <h2 className="text-xl font-bold">Configuração Atual</h2>
+            <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+              config.isActive 
+                ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                : 'bg-red-500/20 text-red-400 border border-red-500/30'
+            }`}>
+              {config.isActive ? 'Ativo' : 'Inativo'}
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {bands.map((band) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-metal-orange/20 to-metal-accent/20 rounded-lg flex items-center justify-center">
+                <Music className="w-6 h-6 text-metal-orange" />
+              </div>
+              <div>
+                <p className="text-metal-text-secondary text-sm">Banda</p>
+                <p className="font-bold">{config.bandName}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-metal-accent/20 to-metal-orange/20 rounded-lg flex items-center justify-center">
+                <ImageIcon className="w-6 h-6 text-metal-accent" />
+              </div>
+              <div>
+                <p className="text-metal-text-secondary text-sm">Álbum</p>
+                <p className="font-bold">{config.albumName}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-500/20 to-green-400/20 rounded-lg flex items-center justify-center">
+                <Play className="w-6 h-6 text-green-400" />
+              </div>
+              <div>
+                <p className="text-metal-text-secondary text-sm">Reproduções</p>
+                <p className="font-bold">{formatPlayCount(config.playCount)}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500/20 to-blue-400/20 rounded-lg flex items-center justify-center">
+                <Link className="w-6 h-6 text-blue-400" />
+              </div>
+              <div>
+                <p className="text-metal-text-secondary text-sm">Matéria</p>
+                <p className="font-bold text-sm truncate">{config.newsLink}</p>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Lista de Bandas */}
+      <div className="bg-metal-card rounded-lg border border-metal-light-gray/20 overflow-hidden">
+        <div className="p-6 border-b border-metal-light-gray/20 flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-metal-text">Bandas Disponíveis</h3>
+          <button
+            onClick={handleAddBand}
+            className="btn-primary flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Adicionar Banda
+          </button>
+        </div>
+        
+        {bands.length === 0 ? (
+          <div className="p-12 text-center">
+            <Music className="w-16 h-16 text-metal-text-secondary mx-auto mb-4" />
+            <p className="text-metal-text-secondary">Nenhuma banda cadastrada</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-metal-light-gray/20">
+            {bands.map((band, index) => (
               <motion.div
                 key={band.id}
-                className="bg-metal-dark border border-metal-border rounded-lg p-4 hover:border-metal-orange/30 transition-colors"
-                whileHover={{ scale: 1.02 }}
-                transition={{ duration: 0.2 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="p-6 hover:bg-metal-gray/30 transition-colors"
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-metal-orange/20 to-metal-accent/20 rounded-lg flex items-center justify-center">
-                      <span className="text-metal-orange font-bold text-sm">
-                        {band.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                      </span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-metal-gray rounded-lg flex items-center justify-center">
+                      {band.image ? (
+                        <img
+                          src={band.image}
+                          alt={band.name}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      ) : (
+                        <Music className="w-6 h-6 text-metal-orange" />
+                      )}
                     </div>
                     <div>
-                      <h3 className="font-bold">{band.name}</h3>
-                      <p className="text-metal-text-secondary text-sm">{band.genre}</p>
+                      <h4 className="font-medium text-metal-text">{band.name}</h4>
+                      <div className="flex items-center gap-2 mt-1">
+                        <div className="px-2 py-1 rounded-full text-xs font-medium bg-metal-accent/20 text-metal-accent border border-metal-accent/30">
+                          {band.genre}
+                        </div>
+                        {config?.bandId === band.id && (
+                          <div className="px-2 py-1 rounded-full text-xs font-medium bg-metal-orange/20 text-metal-orange border border-metal-orange/30">
+                            Em Destaque
+                          </div>
+                        )}
+                      </div>
+                      {band.description && (
+                        <p className="text-sm text-metal-text-secondary mt-1 line-clamp-2">
+                          {band.description}
+                        </p>
+                      )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
+                  
+                  <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleEditBand(band)}
-                      className="p-1 text-metal-text-secondary hover:text-metal-orange transition-colors"
+                      className="p-2 text-metal-text-secondary hover:text-metal-orange transition-colors"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleDeleteBand(band.id)}
-                      className="p-1 text-metal-text-secondary hover:text-red-400 transition-colors"
+                      className="p-2 text-metal-text-secondary hover:text-metal-red transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
-                
-                <p className="text-metal-text-secondary text-sm mb-3 line-clamp-2">
-                  {band.description}
-                </p>
-
-                {config?.bandId === band.id && (
-                  <div className="flex items-center gap-2 text-metal-orange text-sm">
-                    <Star className="w-4 h-4" />
-                    <span className="font-medium">Top do Mês Atual</span>
-                  </div>
-                )}
               </motion.div>
             ))}
           </div>
-        </motion.div>
+        )}
       </div>
 
       {/* Modal de Configuração */}
-      <AnimatePresence>
-        {showConfigModal && (
-          <motion.div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="bg-metal-card border border-metal-border rounded-lg p-6 w-full max-w-md"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+      <Modal
+        isOpen={showConfigModal}
+        onClose={() => setShowConfigModal(false)}
+        title="Configurar Top do Mês"
+        size="lg"
+      >
+        <form onSubmit={handleConfigSubmit} className="space-y-6">
+          <div>
+            <label className="form-label">Banda</label>
+            <select
+              value={configForm.bandId}
+              onChange={(e) => setConfigForm({ ...configForm, bandId: e.target.value })}
+              className="form-select"
+              required
             >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold">Configurar Top do Mês</h3>
-                <button
-                  onClick={() => setShowConfigModal(false)}
-                  className="text-metal-text-secondary hover:text-metal-orange transition-colors"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
+              <option value="">Selecione uma banda</option>
+              {bands.map(band => (
+                <option key={band.id} value={band.id}>
+                  {band.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-              <form onSubmit={handleConfigSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Banda</label>
-                  <select
-                    value={configForm.bandId}
-                    onChange={(e) => setConfigForm({ ...configForm, bandId: e.target.value })}
-                    className="w-full bg-metal-dark border border-metal-border rounded-lg px-3 py-2 text-metal-text focus:border-metal-orange focus:outline-none"
-                    required
-                  >
-                    <option value="">Selecione uma banda</option>
-                    {bands.map((band) => (
-                      <option key={band.id} value={band.id}>
-                        {band.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+          <div>
+            <label className="form-label">Nome do Álbum</label>
+            <input
+              type="text"
+              value={configForm.albumName}
+              onChange={(e) => setConfigForm({ ...configForm, albumName: e.target.value })}
+              className="form-input"
+              placeholder="Nome do álbum em destaque"
+              required
+            />
+          </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">Álbum</label>
-                  <input
-                    type="text"
-                    value={configForm.albumName}
-                    onChange={(e) => setConfigForm({ ...configForm, albumName: e.target.value })}
-                    className="w-full bg-metal-dark border border-metal-border rounded-lg px-3 py-2 text-metal-text focus:border-metal-orange focus:outline-none"
-                    placeholder="Nome do álbum"
-                    required
-                  />
-                </div>
+          <div>
+            <label className="form-label">URL da Imagem do Álbum</label>
+            <input
+              type="url"
+              value={configForm.albumImage}
+              onChange={(e) => setConfigForm({ ...configForm, albumImage: e.target.value })}
+              className="form-input"
+              placeholder="https://exemplo.com/album.jpg"
+            />
+          </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">Imagem do Álbum (URL)</label>
-                  <input
-                    type="url"
-                    value={configForm.albumImage}
-                    onChange={(e) => setConfigForm({ ...configForm, albumImage: e.target.value })}
-                    className="w-full bg-metal-dark border border-metal-border rounded-lg px-3 py-2 text-metal-text focus:border-metal-orange focus:outline-none"
-                    placeholder="https://exemplo.com/imagem.jpg"
-                  />
-                </div>
+          <div>
+            <label className="form-label">Número de Reproduções</label>
+            <input
+              type="number"
+              value={configForm.playCount}
+              onChange={(e) => setConfigForm({ ...configForm, playCount: e.target.value })}
+              className="form-input"
+              placeholder="1000000"
+              required
+            />
+          </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">Número de Reproduções</label>
-                  <input
-                    type="number"
-                    value={configForm.playCount}
-                    onChange={(e) => setConfigForm({ ...configForm, playCount: e.target.value })}
-                    className="w-full bg-metal-dark border border-metal-border rounded-lg px-3 py-2 text-metal-text focus:border-metal-orange focus:outline-none"
-                    placeholder="45000"
-                    required
-                  />
-                </div>
+          <div>
+            <label className="form-label">Link da Matéria</label>
+            <input
+              type="url"
+              value={configForm.newsLink}
+              onChange={(e) => setConfigForm({ ...configForm, newsLink: e.target.value })}
+              className="form-input"
+              placeholder="https://exemplo.com/materia"
+            />
+          </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">Link da Matéria</label>
-                  <input
-                    type="text"
-                    value={configForm.newsLink}
-                    onChange={(e) => setConfigForm({ ...configForm, newsLink: e.target.value })}
-                    className="w-full bg-metal-dark border border-metal-border rounded-lg px-3 py-2 text-metal-text focus:border-metal-orange focus:outline-none"
-                    placeholder="/news/banda-top-month"
-                    required
-                  />
-                </div>
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="isActive"
+              checked={configForm.isActive}
+              onChange={(e) => setConfigForm({ ...configForm, isActive: e.target.checked })}
+              className="form-checkbox"
+            />
+            <label htmlFor="isActive" className="text-sm text-metal-text-secondary">
+              Ativar Top do Mês
+            </label>
+          </div>
 
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    id="isActive"
-                    checked={configForm.isActive}
-                    onChange={(e) => setConfigForm({ ...configForm, isActive: e.target.checked })}
-                    className="w-4 h-4 text-metal-orange bg-metal-dark border-metal-border rounded focus:ring-metal-orange"
-                  />
-                  <label htmlFor="isActive" className="text-sm font-medium">
-                    Ativo
-                  </label>
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowConfigModal(false)}
-                    className="flex-1 bg-metal-dark border border-metal-border text-metal-text px-4 py-2 rounded-lg hover:bg-metal-border transition-colors"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 bg-metal-orange hover:bg-metal-orange/90 text-metal-dark px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2"
-                  >
-                    <Save className="w-4 h-4" />
-                    Salvar
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-metal-border">
+            <button
+              type="button"
+              onClick={() => setShowConfigModal(false)}
+              className="btn-secondary"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="btn-primary flex items-center gap-2"
+            >
+              <Save className="w-4 h-4" />
+              Salvar Configuração
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Modal de Banda */}
-      <AnimatePresence>
-        {showBandModal && (
-          <motion.div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="bg-metal-card border border-metal-border rounded-lg p-6 w-full max-w-md"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+      <Modal
+        isOpen={showBandModal}
+        onClose={() => {
+          setShowBandModal(false)
+          setEditingBand(null)
+          setBandForm({ name: '', genre: '', description: '', image: '' })
+        }}
+        title={editingBand ? 'Editar Banda' : 'Nova Banda'}
+        size="md"
+      >
+        <form onSubmit={handleBandSubmit} className="space-y-6">
+          <div>
+            <label className="form-label">Nome da Banda</label>
+            <input
+              type="text"
+              value={bandForm.name}
+              onChange={(e) => setBandForm({ ...bandForm, name: e.target.value })}
+              className="form-input"
+              placeholder="Nome da banda"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Gênero</label>
+            <input
+              type="text"
+              value={bandForm.genre}
+              onChange={(e) => setBandForm({ ...bandForm, genre: e.target.value })}
+              className="form-input"
+              placeholder="Heavy Metal, Thrash Metal, etc."
+              required
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Descrição</label>
+            <textarea
+              value={bandForm.description}
+              onChange={(e) => setBandForm({ ...bandForm, description: e.target.value })}
+              className="form-textarea"
+              rows={3}
+              placeholder="Breve descrição da banda..."
+            />
+          </div>
+
+          <div>
+            <label className="form-label">URL da Imagem</label>
+            <input
+              type="url"
+              value={bandForm.image}
+              onChange={(e) => setBandForm({ ...bandForm, image: e.target.value })}
+              className="form-input"
+              placeholder="https://exemplo.com/banda.jpg"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-metal-border">
+            <button
+              type="button"
+              onClick={() => {
+                setShowBandModal(false)
+                setEditingBand(null)
+                setBandForm({ name: '', genre: '', description: '', image: '' })
+              }}
+              className="btn-secondary"
             >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold">
-                  {editingBand ? 'Editar Banda' : 'Nova Banda'}
-                </h3>
-                <button
-                  onClick={() => {
-                    setShowBandModal(false)
-                    setEditingBand(null)
-                    setBandForm({
-                      name: '',
-                      genre: '',
-                      description: '',
-                      image: ''
-                    })
-                  }}
-                  className="text-metal-text-secondary hover:text-metal-orange transition-colors"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-
-              <form onSubmit={handleBandSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Nome da Banda</label>
-                  <input
-                    type="text"
-                    value={bandForm.name}
-                    onChange={(e) => setBandForm({ ...bandForm, name: e.target.value })}
-                    className="w-full bg-metal-dark border border-metal-border rounded-lg px-3 py-2 text-metal-text focus:border-metal-orange focus:outline-none"
-                    placeholder="Nome da banda"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Gênero</label>
-                  <input
-                    type="text"
-                    value={bandForm.genre}
-                    onChange={(e) => setBandForm({ ...bandForm, genre: e.target.value })}
-                    className="w-full bg-metal-dark border border-metal-border rounded-lg px-3 py-2 text-metal-text focus:border-metal-orange focus:outline-none"
-                    placeholder="Metalcore, Alternative Metal, etc."
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Descrição</label>
-                  <textarea
-                    value={bandForm.description}
-                    onChange={(e) => setBandForm({ ...bandForm, description: e.target.value })}
-                    className="w-full bg-metal-dark border border-metal-border rounded-lg px-3 py-2 text-metal-text focus:border-metal-orange focus:outline-none resize-none"
-                    rows={3}
-                    placeholder="Breve descrição da banda"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Imagem (URL)</label>
-                  <input
-                    type="url"
-                    value={bandForm.image}
-                    onChange={(e) => setBandForm({ ...bandForm, image: e.target.value })}
-                    className="w-full bg-metal-dark border border-metal-border rounded-lg px-3 py-2 text-metal-text focus:border-metal-orange focus:outline-none"
-                    placeholder="https://exemplo.com/imagem.jpg"
-                  />
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowBandModal(false)
-                      setEditingBand(null)
-                      setBandForm({
-                        name: '',
-                        genre: '',
-                        description: '',
-                        image: ''
-                      })
-                    }}
-                    className="flex-1 bg-metal-dark border border-metal-border text-metal-text px-4 py-2 rounded-lg hover:bg-metal-border transition-colors"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 bg-metal-orange hover:bg-metal-orange/90 text-metal-dark px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2"
-                  >
-                    <Save className="w-4 h-4" />
-                    {editingBand ? 'Atualizar' : 'Criar'}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="btn-primary flex items-center gap-2"
+            >
+              <Save className="w-4 h-4" />
+              {editingBand ? 'Atualizar' : 'Criar'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+    </PageLayout>
   )
 }
 

@@ -1,247 +1,161 @@
-import { motion } from 'framer-motion'
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { useNavigate, useLocation, Link } from 'react-router-dom'
-import { 
-  LayoutDashboard, 
-  Music, 
-  Clock, 
-  Users, 
-  Settings, 
-  LogOut, 
-  Menu, 
-  X,
-  Shield,
-  FileText,
-  Image,
-  ImageIcon,
-  TrendingUp,
-  Share2
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Link, useLocation } from 'react-router-dom'
+import {
+  LayoutDashboard, Music, Calendar, FileText, Users, 
+  Image, TrendingUp, Share2, Settings, LogOut, Menu, X,
+  Home, Radio, Newspaper, FolderOpen
 } from 'lucide-react'
 
 interface AdminLayoutProps {
   children: React.ReactNode
-  onLogout?: () => void
+  onLogout: () => void
 }
 
 const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
-  const navigate = useNavigate()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const location = useLocation()
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [currentUser, setCurrentUser] = useState<any>(null)
-  const [isDesktop, setIsDesktop] = useState(false)
-  const isMountedRef = useRef(true)
 
-  const navigationItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', href: '/admin/dashboard' },
-    { icon: Music, label: 'Bandas', href: '/admin/bands' },
-    { icon: Clock, label: 'Programação', href: '/admin/schedule' },
-    { icon: FileText, label: 'Notícias', href: '/admin/news' },
-    { icon: Users, label: 'Usuários', href: '/admin/users' },
-    { icon: Image, label: 'Arquivos', href: '/admin/files' },
-    { icon: ImageIcon, label: 'Carrossel', href: '/admin/carousel' },
-    { icon: TrendingUp, label: 'Top do Mês', href: '/admin/top-month' },
-    { icon: Share2, label: 'Links Sociais', href: '/admin/social-links' },
-    { icon: Settings, label: 'Configurações', href: '/admin/settings' }
+  // Close sidebar on mobile when route changes
+  useEffect(() => {
+    if (window.innerWidth < 1024) {
+      setSidebarOpen(false)
+    }
+  }, [location.pathname])
+
+  const navigation = [
+    { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+    { name: 'Bandas', href: '/admin/bands', icon: Music },
+    { name: 'Programação', href: '/admin/schedule', icon: Calendar },
+    { name: 'Arquivos', href: '/admin/files', icon: FolderOpen },
+    { name: 'Notícias', href: '/admin/news', icon: Newspaper },
+    { name: 'Usuários', href: '/admin/users', icon: Users },
+    { name: 'Carrossel', href: '/admin/carousel', icon: Image },
+    { name: 'Top do Mês', href: '/admin/top-month', icon: TrendingUp },
+    { name: 'Redes Sociais', href: '/admin/social-links', icon: Share2 },
+    { name: 'Configurações', href: '/admin/settings', icon: Settings },
   ]
-
-  const safeNavigate = useCallback((path: string) => {
-    if (isMountedRef.current && typeof window !== 'undefined') {
-      try {
-        navigate(path)
-      } catch (error) {
-        console.error('Erro na navegação:', error)
-        // Fallback para window.location se navigate falhar
-        window.location.href = path
-      }
-    }
-  }, [navigate])
-
-  useEffect(() => {
-    // Verificar autenticação
-    const token = localStorage.getItem('adminToken')
-    const user = localStorage.getItem('adminUser')
-    
-    if (token && user) {
-      setIsAuthenticated(true)
-      setCurrentUser(JSON.parse(user))
-    } else {
-      // Redirecionar para login se não autenticado
-      safeNavigate('/admin/login')
-    }
-    
-    setIsLoading(false)
-
-    return () => {
-      isMountedRef.current = false
-    }
-  }, [safeNavigate])
-
-  useEffect(() => {
-    // Detectar tamanho da tela
-    const checkScreenSize = () => {
-      setIsDesktop(window.innerWidth >= 1024) // lg breakpoint
-    }
-    
-    checkScreenSize()
-    window.addEventListener('resize', checkScreenSize)
-    
-    return () => window.removeEventListener('resize', checkScreenSize)
-  }, [])
 
   const handleLogout = () => {
     localStorage.removeItem('adminToken')
     localStorage.removeItem('adminUser')
-    onLogout?.()
-    safeNavigate('/admin/login')
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-metal-dark flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-metal-orange/30 border-t-metal-orange rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-metal-text-secondary">Carregando...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!isAuthenticated) {
-    return null
+    onLogout()
   }
 
   return (
-    <div className="min-h-screen bg-metal-dark text-metal-text">
-      {/* Mobile Sidebar Overlay */}
-      {isSidebarOpen && (
-        <motion.div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
+    <div className="min-h-screen bg-metal-dark flex">
+      {/* Mobile sidebar overlay */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Sidebar */}
-      <div
-        className={`fixed top-0 left-0 h-full w-64 bg-metal-card border-r border-metal-light-gray/20 z-50 transform transition-transform duration-300 ${
-          isDesktop ? 'translate-x-0' : (isSidebarOpen ? 'translate-x-0' : '-translate-x-full')
-        }`}
-      >
-        <div className="p-6">
-          {/* Logo */}
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 bg-gradient-to-br from-metal-orange to-metal-accent rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">MM</span>
-            </div>
-            <div>
-              <h1 className="text-lg font-bold tracking-widest uppercase">Morden Metal</h1>
-              <p className="text-xs text-metal-text-secondary">Admin Panel</p>
-            </div>
+      <aside className={`
+        fixed lg:static inset-y-0 left-0 z-50 w-72 bg-metal-card border-r border-metal-border
+        transform transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-metal-border">
+            <Link to="/admin/dashboard" className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-metal-orange to-metal-accent rounded-lg flex items-center justify-center">
+                <Radio className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-gradient">Morden Metal</h1>
+                <p className="text-xs text-metal-text-secondary">Admin Panel</p>
+              </div>
+            </Link>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden p-2 text-metal-text-secondary hover:text-metal-orange transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
           {/* Navigation */}
-          <nav className="space-y-2">
-            {navigationItems.map((item, index) => {
+          <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            {navigation.map((item) => {
+              const isActive = location.pathname === item.href
               const Icon = item.icon
-              const isActive = location.pathname === item.href || 
-                              (item.href !== '/admin/dashboard' && location.pathname.startsWith(item.href))
               
               return (
-                <motion.div
-                  key={item.label}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={`nav-link ${isActive ? 'active' : ''}`}
                 >
-                  <Link
-                    to={item.href}
-                    onClick={() => setIsSidebarOpen(false)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                      isActive 
-                        ? 'bg-metal-orange/20 text-metal-orange border border-metal-orange/30' 
-                        : 'text-metal-text-secondary hover:text-metal-orange hover:bg-metal-gray/50'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5" />
-                    <span className="font-medium">{item.label}</span>
-                  </Link>
-                </motion.div>
+                  <Icon className="w-5 h-5" />
+                  <span className="font-medium">{item.name}</span>
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute right-0 w-1 h-8 bg-metal-orange rounded-l-full"
+                    />
+                  )}
+                </Link>
               )
             })}
           </nav>
 
-          {/* User Info */}
-          <div className="absolute bottom-6 left-6 right-6">
-            <div className="p-4 bg-metal-gray/50 rounded-lg border border-metal-light-gray/20">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 bg-metal-orange/20 rounded-full flex items-center justify-center">
-                  <Shield className="w-4 h-4 text-metal-orange" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">{currentUser?.username}</p>
-                  <p className="text-xs text-metal-text-secondary capitalize">{currentUser?.role}</p>
-                </div>
-              </div>
-              <motion.button
-                onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm text-metal-text-secondary hover:text-metal-red transition-colors rounded-lg hover:bg-metal-red/10"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <LogOut className="w-4 h-4" />
-                Sair
-              </motion.button>
-            </div>
+          {/* Footer */}
+          <div className="p-4 border-t border-metal-border">
+            <button
+              onClick={handleLogout}
+              className="w-full nav-link text-metal-red hover:text-red-400"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="font-medium">Sair</span>
+            </button>
           </div>
         </div>
-      </div>
+      </aside>
 
-      {/* Main Content */}
-      <div className="lg:ml-64">
-        {/* Top Bar */}
-        <motion.div
-          className="bg-metal-card border-b border-metal-light-gray/20 px-4 py-4 lg:px-8"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
+      {/* Main content */}
+      <div className="flex-1 flex flex-col">
+        {/* Top bar */}
+        <header className="bg-metal-card border-b border-metal-border px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="lg:hidden text-metal-text-secondary hover:text-metal-orange transition-colors"
-              >
-                {isSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
-              <div className="hidden lg:block">
-                <h2 className="text-lg font-medium">Painel Administrativo</h2>
-                <p className="text-sm text-metal-text-secondary">
-                  Bem-vindo, {currentUser?.username}
-                </p>
-              </div>
-            </div>
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden p-2 text-metal-text-secondary hover:text-metal-orange transition-colors"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
             
             <div className="flex items-center gap-4">
               <div className="hidden sm:flex items-center gap-2 text-sm text-metal-text-secondary">
-                <div className="w-2 h-2 bg-metal-orange rounded-full animate-pulse"></div>
-                Sistema Online
+                <span>Admin</span>
+                <span>•</span>
+                <span>{navigation.find(item => item.href === location.pathname)?.name || 'Dashboard'}</span>
               </div>
             </div>
           </div>
-        </motion.div>
+        </header>
 
-        {/* Page Content */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          {children}
-        </motion.div>
+        {/* Page content */}
+        <main className="flex-1 overflow-auto">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="h-full"
+          >
+            {children}
+          </motion.div>
+        </main>
       </div>
     </div>
   )

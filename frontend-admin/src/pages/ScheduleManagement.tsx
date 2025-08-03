@@ -1,6 +1,9 @@
-import { motion } from 'framer-motion'
-import { Plus, Edit, Trash2, Clock, Users, Music, Save, X, AlertTriangle } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Plus, Edit, Trash2, Clock, Users, Music, Save, X, AlertTriangle, Loader2 } from 'lucide-react'
 import { useState } from 'react'
+import PageLayout from '../components/PageLayout'
+import Card from '../components/ui/Card'
+import Modal from '../components/ui/Modal'
 
 interface Program {
   id: number
@@ -42,6 +45,7 @@ const ScheduleManagement = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingProgram, setEditingProgram] = useState<Program | null>(null)
+  const [saving, setSaving] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
     startTime: '',
@@ -76,8 +80,9 @@ const ScheduleManagement = () => {
     return null
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
     
     const conflict = checkTimeConflict(
       formData.startTime, 
@@ -87,33 +92,34 @@ const ScheduleManagement = () => {
     
     if (conflict) {
       setTimeConflict(conflict)
+      setSaving(false)
       return
     }
     
     setTimeConflict(null)
     
-    // Validação de segurança
-    const sanitizedTitle = formData.title.replace(/[<>]/g, '')
-    const sanitizedDescription = formData.description.replace(/[<>]/g, '')
+    // Simular salvamento
+    await new Promise(resolve => setTimeout(resolve, 1000))
     
     if (editingProgram) {
       setPrograms(programs.map(program => 
-        program.id === editingProgram.id 
-          ? { ...formData, id: program.id, title: sanitizedTitle, description: sanitizedDescription }
-          : program
+        program.id === editingProgram.id ? { ...formData, id: program.id } : program
       ))
     } else {
-      const newProgram: Program = {
-        id: Date.now(),
+      const newProgram = {
         ...formData,
-        title: sanitizedTitle,
-        description: sanitizedDescription
+        id: Math.max(...programs.map(p => p.id)) + 1
       }
       setPrograms([...programs, newProgram])
     }
     
     setIsModalOpen(false)
     setEditingProgram(null)
+    resetForm()
+    setSaving(false)
+  }
+
+  const resetForm = () => {
     setFormData({
       title: '',
       startTime: '',
@@ -139,295 +145,259 @@ const ScheduleManagement = () => {
   }
 
   const formatTime = (time: string) => {
-    return time.replace(':', 'h')
+    const [hours, minutes] = time.split(':')
+    const hour = parseInt(hours)
+    const ampm = hour >= 12 ? 'PM' : 'AM'
+    const displayHour = hour % 12 || 12
+    return `${displayHour}:${minutes} ${ampm}`
+  }
+
+  const handleAddNew = () => {
+    setEditingProgram(null)
+    resetForm()
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setEditingProgram(null)
+    resetForm()
+    setTimeConflict(null)
   }
 
   return (
-    <div className="min-h-screen bg-metal-dark text-metal-text">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <motion.div 
-          className="mb-8"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-widest uppercase mb-2">
-                Gestão da Programação
-              </h1>
-              <p className="text-metal-text-secondary">
-                Gerencie a grade de programação da rádio
-              </p>
-            </div>
-            <motion.button
-              className="btn-primary flex items-center gap-2"
-              onClick={() => setIsModalOpen(true)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Plus className="w-5 h-5" />
-              Adicionar Programa
-            </motion.button>
-          </div>
-        </motion.div>
-
-        {/* Schedule Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {programs.map((program, index) => (
-            <motion.div
-              key={program.id}
-              className={`program-card group ${program.isLive ? 'live' : ''}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-            >
-              {/* Live Indicator */}
+    <PageLayout
+      title="Gestão de Programação"
+      subtitle="Gerencie a programação da rádio, horários e apresentadores"
+      showAddButton={true}
+      onAddClick={handleAddNew}
+      addButtonLabel="Novo Programa"
+    >
+      {/* Programs Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {programs.map((program, index) => (
+          <Card
+            key={program.id}
+            delay={index * 0.1}
+            hover={true}
+            className="p-6"
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-metal-accent to-blue-600 rounded-lg flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-metal-text">{program.title}</h3>
+                  <p className="text-sm text-metal-text-secondary">{program.genre}</p>
+                </div>
+              </div>
               {program.isLive && (
-                <div className="absolute top-4 right-4 z-10">
-                  <div className="live-indicator">
-                    <div className="live-dot"></div>
-                    <span className="text-xs font-bold">AO VIVO</span>
-                  </div>
+                <div className="flex items-center gap-1 px-2 py-1 bg-red-500/10 border border-red-500/30 rounded-full">
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs text-red-400 font-medium">AO VIVO</span>
                 </div>
               )}
+            </div>
 
-              {/* Time */}
-              <div className="flex items-center gap-2 mb-3">
-                <Clock className="w-4 h-4 text-metal-orange" />
-                <span className="text-sm font-mono text-metal-orange">
+            <p className="text-sm text-metal-text-secondary mb-4 line-clamp-2">
+              {program.description}
+            </p>
+
+            <div className="space-y-3 mb-4">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-metal-text-secondary">Horário:</span>
+                <span className="font-medium">
                   {formatTime(program.startTime)} - {formatTime(program.endTime)}
                 </span>
               </div>
-
-              {/* Title */}
-              <h3 className="text-xl font-bold text-metal-text mb-2 group-hover:text-metal-orange transition-colors">
-                {program.title}
-              </h3>
-
-              {/* Description */}
-              <p className="text-metal-text-secondary text-sm mb-4 leading-relaxed">
-                {program.description}
-              </p>
-
-              {/* Host */}
-              <div className="flex items-center gap-2 mb-3">
-                <Users className="w-4 h-4 text-metal-text-secondary" />
-                <span className="text-sm text-metal-text-secondary">
-                  Apresentado por <span className="text-metal-orange font-medium">{program.host}</span>
-                </span>
+              
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-metal-text-secondary">Apresentador:</span>
+                <span className="font-medium">{program.host}</span>
               </div>
-
-              {/* Genre */}
-              <div className="flex items-center gap-2 mb-4">
-                <Music className="w-4 h-4 text-metal-text-secondary" />
-                <span className="text-sm text-metal-text-secondary">
-                  {program.genre}
-                </span>
-              </div>
-
-              {/* Listeners */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-metal-text-secondary">
-                    {program.listeners} ouvintes
-                  </span>
-                </div>
-                
-                <div className="flex gap-2">
-                  <motion.button
-                    className="text-metal-orange hover:text-metal-accent transition-colors"
-                    onClick={() => handleEdit(program)}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <Edit className="w-4 h-4" />
-                  </motion.button>
-                  <motion.button
-                    className="text-metal-red hover:text-metal-red/80 transition-colors"
-                    onClick={() => handleDelete(program.id)}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </motion.button>
+              
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-metal-text-secondary">Ouvintes:</span>
+                <div className="flex items-center gap-1">
+                  <Users className="w-4 h-4" />
+                  <span className="font-medium">{program.listeners}</span>
                 </div>
               </div>
-            </motion.div>
-          ))}
-        </div>
+            </div>
 
-        {/* Modal */}
-        {isModalOpen && (
-          <motion.div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="bg-metal-card rounded-lg p-6 w-full max-w-md mx-4 border border-metal-light-gray/20 max-h-[90vh] overflow-y-auto"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold">
-                  {editingProgram ? 'Editar Programa' : 'Adicionar Programa'}
-                </h2>
-                <button
-                  onClick={() => {
-                    setIsModalOpen(false)
-                    setEditingProgram(null)
-                    setTimeConflict(null)
-                    setFormData({
-                      title: '',
-                      startTime: '',
-                      endTime: '',
-                      host: '',
-                      genre: '',
-                      description: '',
-                      isLive: false,
-                      listeners: ''
-                    })
-                  }}
-                  className="text-metal-text-secondary hover:text-metal-orange"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-
-              {timeConflict && (
-                <motion.div
-                  className="mb-4 p-3 bg-metal-red/10 border border-metal-red/30 rounded-lg flex items-center gap-2"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <AlertTriangle className="w-4 h-4 text-metal-red" />
-                  <span className="text-sm text-metal-red">{timeConflict}</span>
-                </motion.div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Nome do Programa</label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => setFormData({...formData, title: e.target.value})}
-                    className="w-full bg-metal-gray border border-metal-light-gray/30 rounded-lg px-4 py-2 text-metal-text focus:border-metal-orange focus:outline-none"
-                    required
-                    maxLength={100}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Horário de Início</label>
-                    <input
-                      type="time"
-                      value={formData.startTime}
-                      onChange={(e) => {
-                        setFormData({...formData, startTime: e.target.value})
-                        setTimeConflict(null)
-                      }}
-                      className="w-full bg-metal-gray border border-metal-light-gray/30 rounded-lg px-4 py-2 text-metal-text focus:border-metal-orange focus:outline-none"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Horário de Fim</label>
-                    <input
-                      type="time"
-                      value={formData.endTime}
-                      onChange={(e) => {
-                        setFormData({...formData, endTime: e.target.value})
-                        setTimeConflict(null)
-                      }}
-                      className="w-full bg-metal-gray border border-metal-light-gray/30 rounded-lg px-4 py-2 text-metal-text focus:border-metal-orange focus:outline-none"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Apresentador</label>
-                  <input
-                    type="text"
-                    value={formData.host}
-                    onChange={(e) => setFormData({...formData, host: e.target.value})}
-                    className="w-full bg-metal-gray border border-metal-light-gray/30 rounded-lg px-4 py-2 text-metal-text focus:border-metal-orange focus:outline-none"
-                    required
-                    maxLength={50}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Gênero Musical</label>
-                  <input
-                    type="text"
-                    value={formData.genre}
-                    onChange={(e) => setFormData({...formData, genre: e.target.value})}
-                    className="w-full bg-metal-gray border border-metal-light-gray/30 rounded-lg px-4 py-2 text-metal-text focus:border-metal-orange focus:outline-none"
-                    required
-                    maxLength={50}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Descrição</label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
-                    className="w-full bg-metal-gray border border-metal-light-gray/30 rounded-lg px-4 py-2 text-metal-text focus:border-metal-orange focus:outline-none h-24 resize-none"
-                    required
-                    maxLength={300}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Ouvintes</label>
-                  <input
-                    type="text"
-                    value={formData.listeners}
-                    onChange={(e) => setFormData({...formData, listeners: e.target.value})}
-                    className="w-full bg-metal-gray border border-metal-light-gray/30 rounded-lg px-4 py-2 text-metal-text focus:border-metal-orange focus:outline-none"
-                    placeholder="234"
-                  />
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="isLive"
-                    checked={formData.isLive}
-                    onChange={(e) => setFormData({...formData, isLive: e.target.checked})}
-                    className="w-4 h-4 text-metal-orange bg-metal-gray border-metal-light-gray/30 rounded focus:ring-metal-orange"
-                  />
-                  <label htmlFor="isLive" className="text-sm font-medium">
-                    Marcar como AO VIVO
-                  </label>
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <motion.button
-                    type="submit"
-                    className="btn-primary flex items-center gap-2 flex-1 justify-center"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    disabled={!!timeConflict}
-                  >
-                    <Save className="w-4 h-4" />
-                    {editingProgram ? 'Atualizar' : 'Adicionar'}
-                  </motion.button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
+            <div className="flex gap-2">
+              <motion.button
+                onClick={() => handleEdit(program)}
+                className="btn-secondary flex-1 flex items-center justify-center gap-2 text-sm"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Edit className="w-4 h-4" />
+                Editar
+              </motion.button>
+              <motion.button
+                onClick={() => handleDelete(program.id)}
+                className="btn-danger flex items-center justify-center gap-2 text-sm px-3"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Trash2 className="w-4 h-4" />
+              </motion.button>
+            </div>
+          </Card>
+        ))}
       </div>
-    </div>
+
+      {/* Add/Edit Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        title={editingProgram ? 'Editar Programa' : 'Novo Programa'}
+        size="lg"
+      >
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Time Conflict Warning */}
+          <AnimatePresence>
+            {timeConflict && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="p-4 rounded-lg border bg-red-500/10 border-red-500/30 text-red-400"
+              >
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5" />
+                  <span>{timeConflict}</span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="form-label">Título do Programa</label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                className="form-input"
+                placeholder="Digite o título do programa"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="form-label">Gênero</label>
+              <input
+                type="text"
+                value={formData.genre}
+                onChange={(e) => setFormData({ ...formData, genre: e.target.value })}
+                className="form-input"
+                placeholder="Ex: Heavy Metal, Thrash Metal"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="form-label">Horário de Início</label>
+              <input
+                type="time"
+                value={formData.startTime}
+                onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                className="form-input"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="form-label">Horário de Fim</label>
+              <input
+                type="time"
+                value={formData.endTime}
+                onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                className="form-input"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="form-label">Apresentador</label>
+              <input
+                type="text"
+                value={formData.host}
+                onChange={(e) => setFormData({ ...formData, host: e.target.value })}
+                className="form-input"
+                placeholder="Nome do apresentador"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="form-label">Descrição</label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="form-textarea"
+              rows={3}
+              placeholder="Descreva o programa..."
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="form-label">Ouvintes Atuais</label>
+              <input
+                type="text"
+                value={formData.listeners}
+                onChange={(e) => setFormData({ ...formData, listeners: e.target.value })}
+                className="form-input"
+                placeholder="Ex: 1.2K"
+              />
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="isLive"
+                checked={formData.isLive}
+                onChange={(e) => setFormData({ ...formData, isLive: e.target.checked })}
+                className="form-checkbox"
+              />
+              <label htmlFor="isLive" className="text-sm text-metal-text-secondary">
+                Programa ao Vivo
+              </label>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-metal-border">
+            <button
+              type="button"
+              onClick={handleCloseModal}
+              className="btn-secondary"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="btn-primary flex items-center gap-2"
+            >
+              {saving ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
+              {saving ? 'Salvando...' : (editingProgram ? 'Atualizar' : 'Criar')}
+            </button>
+          </div>
+        </form>
+      </Modal>
+    </PageLayout>
   )
 }
 

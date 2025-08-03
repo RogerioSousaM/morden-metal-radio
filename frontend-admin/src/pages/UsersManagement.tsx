@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { 
   Plus, 
@@ -11,9 +11,13 @@ import {
   X,
   Eye,
   EyeOff,
-  Lock
+  Lock,
+  AlertCircle
 } from 'lucide-react'
 import { apiService } from '@/services/api'
+import PageLayout from '../components/PageLayout'
+import Card from '../components/ui/Card'
+import Modal from '../components/ui/Modal'
 
 interface User {
   id: number
@@ -31,6 +35,7 @@ const UsersManagement = () => {
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   const [formData, setFormData] = useState({
     username: '',
@@ -57,6 +62,8 @@ const UsersManagement = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
+    
     try {
       if (editingUser) {
         await apiService.updateUser(editingUser.id, formData)
@@ -70,6 +77,8 @@ const UsersManagement = () => {
     } catch (error) {
       setError('Erro ao salvar usuário')
       console.error('Erro ao salvar usuário:', error)
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -104,251 +113,265 @@ const UsersManagement = () => {
     setShowPassword(false)
   }
 
+  const handleAddNew = () => {
+    setEditingUser(null)
+    resetForm()
+    setShowForm(true)
+  }
+
+  const handleCloseModal = () => {
+    setShowForm(false)
+    setEditingUser(null)
+    resetForm()
+  }
+
   const filteredUsers = users.filter(user =>
     user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.role.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-metal-orange/30 border-t-metal-orange rounded-full animate-spin"></div>
-      </div>
-    )
-  }
+  const stats = [
+    {
+      title: 'Total de Usuários',
+      value: users.length.toString(),
+      icon: User,
+      color: 'from-metal-orange to-orange-600'
+    },
+    {
+      title: 'Administradores',
+      value: users.filter(u => u.role === 'admin').length.toString(),
+      icon: Shield,
+      color: 'from-red-500 to-red-600'
+    },
+    {
+      title: 'Usuários Comuns',
+      value: users.filter(u => u.role === 'user').length.toString(),
+      icon: User,
+      color: 'from-metal-accent to-blue-600'
+    },
+    {
+      title: 'Este Mês',
+      value: users.filter(u => {
+        const createdAt = new Date(u.createdAt)
+        const now = new Date()
+        return createdAt.getMonth() === now.getMonth() && createdAt.getFullYear() === now.getFullYear()
+      }).length.toString(),
+      icon: Lock,
+      color: 'from-green-500 to-green-600'
+    }
+  ]
 
   return (
-    <div className="p-6">
-      {/* Header */}
-      <motion.div
-        className="mb-8"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-widest uppercase mb-2">
-              Gestão de Usuários
-            </h1>
-            <p className="text-metal-text-secondary">
-              Gerencie os usuários do sistema
-            </p>
-          </div>
-          <motion.button
-            className="btn-primary flex items-center gap-2"
-            onClick={() => {
-              setShowForm(true)
-              setEditingUser(null)
-              resetForm()
-            }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+    <PageLayout
+      title="Gestão de Usuários"
+      subtitle="Gerencie os usuários e permissões do sistema"
+      showAddButton={true}
+      onAddClick={handleAddNew}
+      addButtonLabel="Novo Usuário"
+      loading={loading}
+    >
+      {/* Error Message */}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="p-4 rounded-lg border bg-red-500/10 border-red-500/30 text-red-400"
           >
-            <Plus className="w-5 h-5" />
-            Novo Usuário
-          </motion.button>
-        </div>
-      </motion.div>
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5" />
+              <span>{error}</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {stats.map((stat, index) => {
+          const Icon = stat.icon
+          return (
+            <Card
+              key={stat.title}
+              delay={index * 0.1}
+              className="p-6"
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-lg flex items-center justify-center`}>
+                  <Icon className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-metal-text">
+                    {stat.value}
+                  </p>
+                  <p className="text-sm text-metal-text-secondary">{stat.title}</p>
+                </div>
+              </div>
+            </Card>
+          )
+        })}
+      </div>
 
       {/* Busca */}
-      <div className="relative">
+      <div className="relative mb-6">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-metal-text-secondary" />
         <input
           type="text"
           placeholder="Buscar usuários..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 bg-metal-card border border-metal-light-gray/20 rounded-lg text-metal-text placeholder-metal-text-secondary focus:outline-none focus:ring-2 focus:ring-metal-orange"
+          className="form-input pl-10"
         />
       </div>
 
-      {/* Formulário */}
-      {showForm && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-metal-card border border-metal-light-gray/20 rounded-lg p-6"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-metal-text">
-              {editingUser ? 'Editar Usuário' : 'Novo Usuário'}
-            </h3>
-            <button
-              onClick={() => {
-                setShowForm(false)
-                setEditingUser(null)
-                resetForm()
-              }}
-              className="text-metal-text-secondary hover:text-metal-text"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-metal-text-secondary mb-2">
-                Nome de Usuário
-              </label>
-              <input
-                type="text"
-                value={formData.username}
-                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                className="w-full px-4 py-2 bg-metal-dark border border-metal-light-gray/20 rounded-lg text-metal-text focus:outline-none focus:ring-2 focus:ring-metal-orange"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-metal-text-secondary mb-2">
-                Senha {editingUser && '(deixe em branco para manter a atual)'}
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full pl-10 pr-10 py-2 bg-metal-dark border border-metal-light-gray/20 rounded-lg text-metal-text focus:outline-none focus:ring-2 focus:ring-metal-orange"
-                  required={!editingUser}
-                />
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-metal-text-secondary" />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-metal-text-secondary hover:text-metal-text"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-metal-text-secondary mb-2">
-                Função
-              </label>
-              <select
-                value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                className="w-full px-4 py-2 bg-metal-dark border border-metal-light-gray/20 rounded-lg text-metal-text focus:outline-none focus:ring-2 focus:ring-metal-orange"
-              >
-                <option value="user">Usuário</option>
-                <option value="admin">Administrador</option>
-                <option value="moderator">Moderador</option>
-              </select>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                type="submit"
-                className="flex items-center gap-2 px-4 py-2 bg-metal-orange hover:bg-metal-orange/90 text-white rounded-lg transition-colors"
-              >
-                <Save className="w-4 h-4" />
-                {editingUser ? 'Atualizar' : 'Criar'}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowForm(false)
-                  setEditingUser(null)
-                  resetForm()
-                }}
-                className="px-4 py-2 bg-metal-light-gray/20 hover:bg-metal-light-gray/30 text-metal-text rounded-lg transition-colors"
-              >
-                Cancelar
-              </button>
-            </div>
-          </form>
-        </motion.div>
-      )}
-
       {/* Lista de Usuários */}
-      <div className="bg-metal-card border border-metal-light-gray/20 rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-metal-dark/50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-metal-text-secondary uppercase tracking-wider">
-                  Usuário
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-metal-text-secondary uppercase tracking-wider">
-                  Função
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-metal-text-secondary uppercase tracking-wider">
-                  Data de Criação
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-metal-text-secondary uppercase tracking-wider">
-                  Ações
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-metal-light-gray/20">
-              {filteredUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-metal-dark/30">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gradient-to-br from-metal-orange to-metal-accent rounded-full flex items-center justify-center">
-                        <User className="w-4 h-4 text-white" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium text-metal-text">{user.username}</div>
-                        <div className="text-sm text-metal-text-secondary">ID: {user.id}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${
-                      user.role === 'admin' 
-                        ? 'bg-red-100 text-red-800' 
-                        : user.role === 'moderator'
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-green-100 text-green-800'
-                    }`}>
-                      <Shield className="w-3 h-3" />
-                      {user.role === 'admin' ? 'Administrador' : 
-                       user.role === 'moderator' ? 'Moderador' : 'Usuário'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-metal-text-secondary">
-                    {new Date(user.createdAt).toLocaleDateString('pt-BR')}
-                  </td>
-                  <td className="px-6 py-4 text-right text-sm font-medium">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleEdit(user)}
-                        className="text-metal-orange hover:text-metal-orange/80 transition-colors"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(user.id)}
-                        className="text-red-500 hover:text-red-400 transition-colors"
-                        disabled={user.role === 'admin'}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="bg-metal-card rounded-lg border border-metal-light-gray/20 overflow-hidden">
+        <div className="p-6 border-b border-metal-light-gray/20">
+          <h3 className="text-lg font-semibold text-metal-text">Usuários</h3>
         </div>
-
-        {filteredUsers.length === 0 && (
-          <div className="text-center py-12">
-            <User className="w-12 h-12 text-metal-text-secondary mx-auto mb-4" />
+        
+        {filteredUsers.length === 0 ? (
+          <div className="p-12 text-center">
+            <User className="w-16 h-16 text-metal-text-secondary mx-auto mb-4" />
             <p className="text-metal-text-secondary">Nenhum usuário encontrado</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-metal-light-gray/20">
+            {filteredUsers.map((user, index) => (
+              <motion.div
+                key={user.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="p-6 hover:bg-metal-gray/30 transition-colors"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-metal-gray rounded-lg flex items-center justify-center">
+                      {user.role === 'admin' ? (
+                        <Shield className="w-6 h-6 text-metal-orange" />
+                      ) : (
+                        <User className="w-6 h-6 text-metal-accent" />
+                      )}
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-metal-text">{user.username}</h4>
+                      <div className="flex items-center gap-2 mt-1">
+                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          user.role === 'admin'
+                            ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                            : 'bg-metal-accent/20 text-metal-accent border border-metal-accent/30'
+                        }`}>
+                          {user.role === 'admin' ? 'Administrador' : 'Usuário'}
+                        </div>
+                        <span className="text-xs text-metal-text-secondary">
+                          Criado em {new Date(user.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleEdit(user)}
+                      className="p-2 text-metal-text-secondary hover:text-metal-orange transition-colors"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(user.id)}
+                      className="p-2 text-metal-text-secondary hover:text-metal-red transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
           </div>
         )}
       </div>
 
-      {error && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-lg">
-          {error}
-        </div>
-      )}
-    </div>
+      {/* Formulário Modal */}
+      <Modal
+        isOpen={showForm}
+        onClose={handleCloseModal}
+        title={editingUser ? 'Editar Usuário' : 'Novo Usuário'}
+        size="md"
+      >
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="form-label">Nome de Usuário</label>
+            <input
+              type="text"
+              value={formData.username}
+              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+              className="form-input"
+              placeholder="Digite o nome de usuário"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="form-label">
+              {editingUser ? 'Nova Senha (deixe em branco para manter)' : 'Senha'}
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="form-input pr-10"
+                placeholder={editingUser ? 'Nova senha (opcional)' : 'Digite a senha'}
+                required={!editingUser}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-metal-text-secondary hover:text-metal-text"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="form-label">Tipo de Usuário</label>
+            <select
+              value={formData.role}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+              className="form-select"
+            >
+              <option value="user">Usuário</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-metal-border">
+            <button
+              type="button"
+              onClick={handleCloseModal}
+              className="btn-secondary"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="btn-primary flex items-center gap-2"
+            >
+              {saving ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
+              {saving ? 'Salvando...' : (editingUser ? 'Atualizar' : 'Criar')}
+            </button>
+          </div>
+        </form>
+      </Modal>
+    </PageLayout>
   )
 }
 

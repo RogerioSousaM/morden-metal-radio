@@ -1,214 +1,283 @@
 import { motion } from 'framer-motion'
-import { Users, Music, Clock, TrendingUp, Plus, Edit, Settings } from 'lucide-react'
-import { useState, useEffect } from 'react'
-import { apiService, type Stats } from '@/services/api'
+import { 
+  Users, Music, Calendar, FileText, TrendingUp, 
+  Radio, Settings,
+  ArrowUpRight, ArrowDownRight, Activity
+} from 'lucide-react'
+import PageLayout from '../components/PageLayout'
+import Card, { CardHeader, CardTitle, CardContent } from '../components/ui/Card'
 
 const Dashboard = () => {
-  const [stats, setStats] = useState<Stats>({
-    listeners: 0,
-    topBand: '',
-    nextProgram: '',
-    systemAlerts: 0,
-    totalBands: 0,
-    totalPrograms: 0
-  })
-  const [loading, setLoading] = useState(true)
+  const stats = [
+    {
+      title: 'Total de Bandas',
+      value: '24',
+      change: '+12%',
+      changeType: 'increase' as const,
+      icon: Music,
+      color: 'from-metal-orange to-orange-600'
+    },
+    {
+      title: 'Programas Ativos',
+      value: '8',
+      change: '+3%',
+      changeType: 'increase' as const,
+      icon: Calendar,
+      color: 'from-metal-accent to-blue-600'
+    },
+    {
+      title: 'Arquivos',
+      value: '156',
+      change: '+8%',
+      changeType: 'increase' as const,
+      icon: FileText,
+      color: 'from-metal-green to-green-600'
+    },
+    {
+      title: 'Usuários',
+      value: '1.2k',
+      change: '-2%',
+      changeType: 'decrease' as const,
+      icon: Users,
+      color: 'from-metal-blue to-blue-600'
+    }
+  ]
 
-  useEffect(() => {
-    loadStats()
-  }, [])
+  const quickActions = [
+    {
+      title: 'Gerenciar Bandas',
+      description: 'Adicionar, editar ou remover bandas',
+      icon: Music,
+      href: '/admin/bands',
+      color: 'bg-gradient-to-br from-metal-orange/20 to-orange-600/20'
+    },
+    {
+      title: 'Programação',
+      description: 'Configurar horários e programas',
+      icon: Calendar,
+      href: '/admin/schedule',
+      color: 'bg-gradient-to-br from-metal-accent/20 to-blue-600/20'
+    },
+    {
+      title: 'Upload de Arquivos',
+      description: 'Fazer upload de músicas e documentos',
+      icon: FileText,
+      href: '/admin/files',
+      color: 'bg-gradient-to-br from-metal-green/20 to-green-600/20'
+    },
+    {
+      title: 'Top do Mês',
+      description: 'Configurar banda em destaque',
+      icon: TrendingUp,
+      href: '/admin/top-month',
+      color: 'bg-gradient-to-br from-metal-yellow/20 to-yellow-600/20'
+    }
+  ]
 
-  const loadStats = async () => {
-    try {
-      setLoading(true)
-      const data = await apiService.getStats()
-      setStats(data)
-    } catch (error) {
-      console.error('Erro ao carregar estatísticas:', error)
-      // Definir valores padrão em caso de erro
-      setStats({
-        listeners: 0,
-        topBand: 'N/A',
-        nextProgram: 'N/A',
-        systemAlerts: 0,
-        totalBands: 0,
-        totalPrograms: 0
-      })
-    } finally {
-      setLoading(false)
+  const recentActivity = [
+    {
+      action: 'Nova banda adicionada',
+      target: 'Metallica',
+      time: '2 minutos atrás',
+      type: 'add' as const
+    },
+    {
+      action: 'Programa atualizado',
+      target: 'Metal Show',
+      time: '15 minutos atrás',
+      type: 'update' as const
+    },
+    {
+      action: 'Arquivo removido',
+      target: 'musica_antiga.mp3',
+      time: '1 hora atrás',
+      type: 'delete' as const
+    },
+    {
+      action: 'Configuração alterada',
+      target: 'Top do Mês',
+      time: '2 horas atrás',
+      type: 'config' as const
+    }
+  ]
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
     }
   }
 
-  const quickActions = [
-    { icon: Plus, label: 'Adicionar Banda', href: '/admin/bands' },
-    { icon: Edit, label: 'Editar Programação', href: '/admin/schedule' },
-    { icon: Music, label: 'Gerenciar Bandas', href: '/admin/bands' },
-    { icon: Settings, label: 'Dashboard', href: '/admin/dashboard' }
-  ]
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  }
 
   return (
-    <div className="min-h-screen bg-metal-dark text-metal-text">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <motion.div 
-          className="mb-8"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <h1 className="text-3xl font-bold tracking-widest uppercase mb-2">
-            Painel Administrativo
-          </h1>
-          <p className="text-metal-text-secondary">
-            Gerencie o conteúdo da Rádio Morden Metal
-          </p>
-        </motion.div>
-
-                 {/* Loading State */}
-         {loading && (
-           <motion.div
-             className="flex items-center justify-center py-12 mb-8"
-             initial={{ opacity: 0 }}
-             animate={{ opacity: 1 }}
-           >
-             <div className="flex items-center gap-3">
-               <div className="w-6 h-6 border-2 border-metal-orange border-t-transparent rounded-full animate-spin"></div>
-               <span className="text-metal-text-secondary">Carregando estatísticas...</span>
-             </div>
-           </motion.div>
-         )}
-
-         {/* Stats Grid */}
-         {!loading && (
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <motion.div
-            className="bg-metal-card rounded-lg p-6 border border-metal-light-gray/20"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-metal-text-secondary text-sm">Ouvintes Online</p>
-                <p className="text-2xl font-bold text-metal-orange">{stats.listeners}</p>
-              </div>
-              <Users className="w-8 h-8 text-metal-orange" />
-            </div>
-          </motion.div>
-
-          <motion.div
-            className="bg-metal-card rounded-lg p-6 border border-metal-light-gray/20"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-metal-text-secondary text-sm">Top do Mês</p>
-                <p className="text-lg font-bold">{stats.topBand}</p>
-              </div>
-              <TrendingUp className="w-8 h-8 text-metal-orange" />
-            </div>
-          </motion.div>
-
-          <motion.div
-            className="bg-metal-card rounded-lg p-6 border border-metal-light-gray/20"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-metal-text-secondary text-sm">Próximo Programa</p>
-                <p className="text-lg font-bold">{stats.nextProgram}</p>
-              </div>
-              <Clock className="w-8 h-8 text-metal-orange" />
-            </div>
-          </motion.div>
-
-          <motion.div
-            className="bg-metal-card rounded-lg p-6 border border-metal-light-gray/20"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-metal-text-secondary text-sm">Alertas do Sistema</p>
-                <p className="text-2xl font-bold text-metal-red">{stats.systemAlerts}</p>
-              </div>
-              <div className="w-8 h-8 bg-metal-red/20 rounded-full flex items-center justify-center">
-                <span className="text-metal-red text-sm font-bold">!</span>
-              </div>
-                         </div>
-           </motion.div>
-           </div>
-         )}
-
-        {/* Quick Actions */}
-        <motion.div
-          className="mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-        >
-          <h2 className="text-xl font-bold mb-4 tracking-wider uppercase">
-            Ações Rápidas
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {quickActions.map((action, index) => {
-              const Icon = action.icon
-              return (
-                <motion.a
-                  key={action.label}
-                  href={action.href}
-                  className="bg-metal-card rounded-lg p-4 border border-metal-light-gray/20 hover:border-metal-orange/30 transition-all duration-300 group"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.6 + index * 0.1 }}
-                >
-                  <div className="flex flex-col items-center text-center">
-                    <Icon className="w-8 h-8 text-metal-orange mb-2 group-hover:scale-110 transition-transform" />
-                    <span className="text-sm font-medium">{action.label}</span>
+    <PageLayout
+      title="Dashboard"
+      subtitle="Visão geral do sistema e estatísticas em tempo real"
+    >
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-6"
+      >
+        {/* Stats Grid */}
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+           {stats.map((stat) => {
+            const Icon = stat.icon
+            return (
+              <motion.div key={stat.title} variants={itemVariants}>
+                <Card className="relative overflow-hidden">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-metal-text-secondary mb-1">
+                        {stat.title}
+                      </p>
+                      <p className="text-2xl font-bold text-metal-text">
+                        {stat.value}
+                      </p>
+                      <div className="flex items-center gap-1 mt-2">
+                        {stat.changeType === 'increase' ? (
+                          <ArrowUpRight className="w-4 h-4 text-metal-green" />
+                        ) : (
+                          <ArrowDownRight className="w-4 h-4 text-metal-red" />
+                        )}
+                        <span className={`text-sm font-medium ${
+                          stat.changeType === 'increase' ? 'text-metal-green' : 'text-metal-red'
+                        }`}>
+                          {stat.change}
+                        </span>
+                        <span className="text-sm text-metal-text-secondary">vs mês passado</span>
+                      </div>
+                    </div>
+                    <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
+                      <Icon className="w-6 h-6 text-white" />
+                    </div>
                   </div>
-                </motion.a>
-              )
-            })}
-          </div>
-        </motion.div>
+                </Card>
+              </motion.div>
+            )
+          })}
+        </div>
 
-        {/* Recent Activity */}
-        <motion.div
-          className="bg-metal-card rounded-lg p-6 border border-metal-light-gray/20"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.7 }}
-        >
-          <h2 className="text-xl font-bold mb-4 tracking-wider uppercase">
-            Atividade Recente
-          </h2>
-          <div className="space-y-3">
-            <div className="flex items-center gap-3 p-3 bg-metal-gray/50 rounded-lg">
-              <div className="w-2 h-2 bg-metal-orange rounded-full"></div>
-              <span className="text-sm">Nova banda "Lorna Shore" adicionada</span>
-              <span className="text-xs text-metal-text-secondary ml-auto">2 min atrás</span>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-metal-gray/50 rounded-lg">
-              <div className="w-2 h-2 bg-metal-orange rounded-full"></div>
-              <span className="text-sm">Programação atualizada para hoje</span>
-              <span className="text-xs text-metal-text-secondary ml-auto">15 min atrás</span>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-metal-gray/50 rounded-lg">
-              <div className="w-2 h-2 bg-metal-red rounded-full"></div>
-              <span className="text-sm">Alerta: Servidor de streaming instável</span>
-              <span className="text-xs text-metal-text-secondary ml-auto">1 hora atrás</span>
-            </div>
-          </div>
+        {/* Quick Actions & Recent Activity */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Quick Actions */}
+          <motion.div variants={itemVariants}>
+            <Card>
+              <CardHeader>
+                <CardTitle>Ações Rápidas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {quickActions.map((action) => {
+                    const Icon = action.icon
+                    return (
+                      <motion.a
+                        key={action.title}
+                        href={action.href}
+                        className={`p-4 rounded-lg border border-metal-border hover:border-metal-orange/30 transition-all duration-200 group ${action.color}`}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="w-12 h-12 bg-metal-card rounded-lg flex items-center justify-center group-hover:bg-metal-orange/20 transition-colors flex-shrink-0">
+                            <Icon className="w-6 h-6 text-metal-orange" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-metal-text group-hover:text-metal-orange transition-colors leading-tight">
+                              {action.title}
+                            </h3>
+                            <p className="text-sm text-metal-text-secondary mt-2 leading-relaxed">
+                              {action.description}
+                            </p>
+                          </div>
+                        </div>
+                      </motion.a>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Recent Activity */}
+          <motion.div variants={itemVariants}>
+            <Card>
+              <CardHeader>
+                <CardTitle>Atividade Recente</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {recentActivity.map((activity, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-metal-gray/30 transition-colors"
+                    >
+                      <div className="w-8 h-8 bg-metal-gray rounded-full flex items-center justify-center">
+                        <Activity className="w-4 h-4 text-metal-orange" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm text-metal-text">
+                          <span className="font-medium">{activity.action}</span>
+                          <span className="text-metal-text-secondary">: {activity.target}</span>
+                        </p>
+                        <p className="text-xs text-metal-text-secondary mt-1">
+                          {activity.time}
+                        </p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+
+        {/* System Status */}
+        <motion.div variants={itemVariants}>
+          <Card>
+            <CardHeader>
+              <CardTitle>Status do Sistema</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-metal-green/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Radio className="w-8 h-8 text-metal-green" />
+                  </div>
+                  <h3 className="font-semibold text-metal-text">Transmissão</h3>
+                  <p className="text-sm text-metal-green">Online</p>
+                </div>
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-metal-accent/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Settings className="w-8 h-8 text-metal-accent" />
+                  </div>
+                  <h3 className="font-semibold text-metal-text">Sistema</h3>
+                  <p className="text-sm text-metal-accent">Operacional</p>
+                </div>
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-metal-orange/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <TrendingUp className="w-8 h-8 text-metal-orange" />
+                  </div>
+                  <h3 className="font-semibold text-metal-text">Performance</h3>
+                  <p className="text-sm text-metal-orange">Excelente</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </motion.div>
-      </div>
-    </div>
+      </motion.div>
+    </PageLayout>
   )
 }
 

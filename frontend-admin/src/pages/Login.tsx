@@ -2,7 +2,11 @@ import { motion } from 'framer-motion'
 import { Eye, EyeOff, Lock, User, AlertCircle } from 'lucide-react'
 import { useState } from 'react'
 
-const Login = () => {
+interface LoginProps {
+  onLogin?: () => void
+}
+
+const Login = ({ onLogin }: LoginProps) => {
   const [formData, setFormData] = useState({
     username: '',
     password: ''
@@ -30,8 +34,13 @@ const Login = () => {
           role: 'admin'
         }))
         
-        // Redirecionar para o dashboard
-        window.location.href = '/admin/dashboard'
+        // Chamar callback de login se fornecido
+        if (onLogin) {
+          onLogin()
+        } else {
+          // Redirecionar para o dashboard
+          window.location.href = '/admin/dashboard'
+        }
       } else {
         setError('Credenciais inválidas. Tente novamente.')
       }

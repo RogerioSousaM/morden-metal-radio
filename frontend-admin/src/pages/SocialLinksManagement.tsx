@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Instagram, Youtube, Twitter, Music, Save, RotateCcw,
-  ExternalLink, CheckCircle, AlertCircle, Loader2
+  ExternalLink, CheckCircle, AlertCircle, Loader2, Share2
 } from 'lucide-react'
 import { apiService } from '../services/api'
+import PageLayout from '../components/PageLayout'
+import Card from '../components/ui/Card'
 
 interface SocialLinks {
   instagram: string
@@ -91,83 +93,98 @@ const SocialLinksManagement = () => {
       label: 'Instagram',
       icon: Instagram,
       placeholder: 'https://instagram.com/mordenmetal',
-      color: 'text-pink-500'
+      color: 'from-pink-500 to-pink-600',
+      bgColor: 'bg-pink-500/20',
+      textColor: 'text-pink-500'
     },
     {
       key: 'youtube' as keyof SocialLinks,
       label: 'YouTube',
       icon: Youtube,
       placeholder: 'https://youtube.com/@mordenmetal',
-      color: 'text-red-500'
+      color: 'from-red-500 to-red-600',
+      bgColor: 'bg-red-500/20',
+      textColor: 'text-red-500'
     },
     {
       key: 'twitter' as keyof SocialLinks,
       label: 'Twitter/X',
       icon: Twitter,
       placeholder: 'https://twitter.com/mordenmetal',
-      color: 'text-blue-400'
+      color: 'from-blue-400 to-blue-600',
+      bgColor: 'bg-blue-500/20',
+      textColor: 'text-blue-400'
     },
     {
       key: 'tiktok' as keyof SocialLinks,
       label: 'TikTok',
       icon: Music,
       placeholder: 'https://tiktok.com/@mordenmetal',
-      color: 'text-black'
+      color: 'from-black to-gray-800',
+      bgColor: 'bg-gray-500/20',
+      textColor: 'text-gray-600'
     }
   ]
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 text-metal-orange animate-spin" />
-        <span className="ml-3 text-metal-text">Carregando links sociais...</span>
-      </div>
-    )
-  }
+  const stats = [
+    {
+      title: 'Links Configurados',
+      value: Object.values(socialLinks).filter(link => link.trim() !== '').length.toString(),
+      icon: Share2,
+      color: 'from-metal-orange to-orange-600'
+    },
+    {
+      title: 'Instagram',
+      value: socialLinks.instagram ? 'Configurado' : 'Não configurado',
+      icon: Instagram,
+      color: socialLinks.instagram ? 'from-pink-500 to-pink-600' : 'from-gray-500 to-gray-600'
+    },
+    {
+      title: 'YouTube',
+      value: socialLinks.youtube ? 'Configurado' : 'Não configurado',
+      icon: Youtube,
+      color: socialLinks.youtube ? 'from-red-500 to-red-600' : 'from-gray-500 to-gray-600'
+    },
+    {
+      title: 'Twitter/X',
+      value: socialLinks.twitter ? 'Configurado' : 'Não configurado',
+      icon: Twitter,
+      color: socialLinks.twitter ? 'from-blue-400 to-blue-600' : 'from-gray-500 to-gray-600'
+    }
+  ]
+
+  const actions = (
+    <div className="flex gap-3">
+      <motion.button
+        onClick={handleSave}
+        disabled={saving}
+        className="btn-primary flex items-center gap-2"
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+      >
+        <Save className="w-4 h-4" />
+        {saving ? 'Salvando...' : 'Salvar'}
+      </motion.button>
+      <motion.button
+        onClick={handleReset}
+        disabled={saving}
+        className="btn-secondary flex items-center gap-2"
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+      >
+        <RotateCcw className="w-4 h-4" />
+        Resetar
+      </motion.button>
+    </div>
+  )
 
   return (
-    <div className="p-6">
-      {/* Header */}
-      <motion.div
-        className="mb-8"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-widest uppercase mb-2">
-              Gestão de Links Sociais
-            </h1>
-            <p className="text-metal-text-secondary">
-              Configure os links das redes sociais
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <motion.button
-              onClick={handleSave}
-              disabled={saving}
-              className="btn-primary flex items-center gap-2"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Save className="w-5 h-5" />
-              Salvar
-            </motion.button>
-            <motion.button
-              onClick={handleReset}
-              disabled={saving}
-              className="btn-secondary flex items-center gap-2"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <RotateCcw className="w-5 h-5" />
-              Resetar
-            </motion.button>
-          </div>
-        </div>
-      </motion.div>
-
+    <PageLayout
+      title="Gestão de Links Sociais"
+      subtitle="Configure os links das redes sociais do site"
+      actions={actions}
+      loading={loading}
+    >
       {/* Message */}
       <AnimatePresence>
         {message && (
@@ -177,43 +194,70 @@ const SocialLinksManagement = () => {
             exit={{ opacity: 0, y: -10 }}
             className={`p-4 rounded-lg border ${
               message.type === 'success'
-                ? 'bg-green-50 border-green-200 text-green-800'
-                : 'bg-red-50 border-red-200 text-red-800'
+                ? 'bg-green-500/10 border-green-500/30 text-green-400'
+                : 'bg-red-500/10 border-red-500/30 text-red-400'
             }`}
           >
-            <div className="flex items-center">
+            <div className="flex items-center gap-2">
               {message.type === 'success' ? (
-                <CheckCircle className="w-5 h-5 mr-2" />
+                <CheckCircle className="w-5 h-5" />
               ) : (
-                <AlertCircle className="w-5 h-5 mr-2" />
+                <AlertCircle className="w-5 h-5" />
               )}
-              {message.text}
+              <span>{message.text}</span>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
+      {/* Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {stats.map((stat, index) => {
+          const Icon = stat.icon
+          return (
+            <Card
+              key={stat.title}
+              delay={index * 0.1}
+              className="p-6"
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-lg flex items-center justify-center`}>
+                  <Icon className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-metal-text">
+                    {stat.value}
+                  </p>
+                  <p className="text-sm text-metal-text-secondary">{stat.title}</p>
+                </div>
+              </div>
+            </Card>
+          )
+        })}
+      </div>
+
       {/* Social Links Form */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-metal-gray/30 rounded-lg p-6 border border-metal-light-gray/30"
-      >
+      <Card delay={0.2} className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {socialPlatforms.map((platform, index) => {
             const Icon = platform.icon
             return (
               <motion.div
                 key={platform.key}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 className="space-y-3"
               >
-                <label className="flex items-center gap-2 text-sm font-medium text-metal-text">
-                  <Icon className={`w-5 h-5 ${platform.color}`} />
-                  {platform.label}
-                </label>
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 bg-gradient-to-br ${platform.color} rounded-lg flex items-center justify-center`}>
+                    <Icon className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-metal-text">{platform.label}</h3>
+                    <p className="text-sm text-metal-text-secondary">URL do perfil</p>
+                  </div>
+                </div>
                 
                 <div className="relative">
                   <input
@@ -221,79 +265,78 @@ const SocialLinksManagement = () => {
                     value={socialLinks[platform.key]}
                     onChange={(e) => handleInputChange(platform.key, e.target.value)}
                     placeholder={platform.placeholder}
-                    className="w-full px-4 py-3 bg-metal-dark border border-metal-light-gray/30 rounded-lg text-metal-text placeholder-metal-text-secondary focus:outline-none focus:ring-2 focus:ring-metal-orange focus:border-transparent transition-all duration-300"
+                    className="form-input pr-10"
                   />
-                  
                   {socialLinks[platform.key] && (
-                    <motion.a
+                    <a
                       href={socialLinks[platform.key]}
                       target="_blank"
                       rel="noopener noreferrer"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-metal-text-secondary hover:text-metal-orange transition-colors"
-                      whileHover={{ scale: 1.1 }}
                     >
                       <ExternalLink className="w-4 h-4" />
-                    </motion.a>
+                    </a>
                   )}
                 </div>
+                
+                {socialLinks[platform.key] && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className={`p-3 rounded-lg ${platform.bgColor} border border-current/20`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className={`w-4 h-4 ${platform.textColor}`} />
+                      <span className={`text-sm font-medium ${platform.textColor}`}>
+                        Link configurado
+                      </span>
+                    </div>
+                  </motion.div>
+                )}
               </motion.div>
             )
           })}
         </div>
+      </Card>
 
-        {/* Action Buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-metal-light-gray/30"
-        >
-          <motion.button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-metal-orange text-white rounded-lg font-medium hover:bg-metal-orange/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            {saving ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <Save className="w-5 h-5" />
-            )}
-            {saving ? 'Salvando...' : 'Salvar Alterações'}
-          </motion.button>
-
-          <motion.button
-            onClick={handleReset}
-            disabled={saving}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-metal-light-gray/50 text-metal-text rounded-lg font-medium hover:bg-metal-light-gray/70 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <RotateCcw className="w-5 h-5" />
-            Resetar para Padrão
-          </motion.button>
-        </motion.div>
-      </motion.div>
-
-      {/* Info Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-        className="bg-metal-dark/50 rounded-lg p-4 border border-metal-light-gray/20"
-      >
-        <h3 className="text-lg font-semibold text-metal-text mb-2">ℹ️ Informações</h3>
-        <ul className="text-sm text-metal-text-secondary space-y-1">
-          <li>• Os links configurados aparecem no header e footer do site principal</li>
-          <li>• Facebook foi excluído conforme solicitado</li>
-          <li>• Todos os links devem ser URLs válidas (https://)</li>
-          <li>• Use "Resetar para Padrão" para restaurar os valores iniciais</li>
-        </ul>
-      </motion.div>
-    </div>
+      {/* Preview Section */}
+      <Card delay={0.3} className="mt-6 p-6">
+        <h3 className="text-lg font-semibold text-metal-text mb-4">Preview dos Links</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {socialPlatforms.map((platform) => {
+            const Icon = platform.icon
+            const hasLink = socialLinks[platform.key] && socialLinks[platform.key].trim() !== ''
+            
+            return (
+              <div
+                key={platform.key}
+                className={`p-4 rounded-lg border transition-all ${
+                  hasLink
+                    ? 'border-metal-orange/30 bg-metal-orange/5'
+                    : 'border-metal-light-gray/20 bg-metal-gray/20'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                    hasLink ? `bg-gradient-to-br ${platform.color}` : 'bg-metal-gray'
+                  }`}>
+                    <Icon className={`w-4 h-4 ${hasLink ? 'text-white' : 'text-metal-text-secondary'}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-metal-text text-sm">{platform.label}</p>
+                    <p className={`text-xs truncate ${
+                      hasLink ? 'text-metal-orange' : 'text-metal-text-secondary'
+                    }`}>
+                      {hasLink ? 'Link ativo' : 'Não configurado'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </Card>
+    </PageLayout>
   )
 }
 
