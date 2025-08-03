@@ -1,0 +1,28 @@
+{
+  "timestamp": "2025-08-02T17:16:39.486Z",
+  "summary": {
+    "totalTests": 6,
+    "totalPassed": 4,
+    "totalFailed": 2,
+    "totalErrors": 0,
+    "successRate": "66.7"
+  },
+  "results": {
+    "frontendUser": {
+      "passed": 2,
+      "failed": 0,
+      "errors": []
+    },
+    "frontendAdmin": {
+      "passed": 0,
+      "failed": 1,
+      "errors": []
+    },
+    "integration": {
+      "passed": 2,
+      "failed": 1,
+      "errors": []
+    }
+  },
+  "conclusion": "WARNING"
+}

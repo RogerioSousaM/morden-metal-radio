@@ -1,0 +1,24 @@
+{
+  "name": "morden-metal-database",
+  "version": "1.0.0",
+  "description": "Database management for Morden Metal Radio",
+  "main": "database.js",
+  "scripts": {
+    "migrate": "node migrate.js",
+    "backup": "node backup.js",
+    "test": "node test-crud.js",
+    "schema": "node check-schema.js"
+  },
+  "dependencies": {
+    "sqlite3": "^5.1.7",
+    "bcryptjs": "^2.4.3"
+  },
+  "keywords": [
+    "sqlite",
+    "database",
+    "migration",
+    "backup"
+  ],
+  "author": "Morden Metal Team",
+  "license": "MIT"
+} 

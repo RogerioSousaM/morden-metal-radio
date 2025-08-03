@@ -34,6 +34,11 @@ Thumbs.db
 logs
 *.log
 
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
 # Runtime data
 pids
 *.pid
@@ -103,4 +108,9 @@ server/.env
 
 # Backup files
 *.bak
-*.backup 
+*.backup
+
+# Upload files
+backend/uploads/
+backend/test-files/
+uploads/ 
