@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { ReactNode } from 'react'
+import { ReactNode, memo } from 'react'
 import { Plus, ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
@@ -16,7 +16,7 @@ interface PageLayoutProps {
   loading?: boolean
 }
 
-const PageLayout = ({
+const PageLayout = memo(({
   title,
   subtitle,
   children,
@@ -29,7 +29,7 @@ const PageLayout = ({
   loading = false
 }: PageLayoutProps) => {
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 page-layout">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -61,7 +61,7 @@ const PageLayout = ({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 action-buttons">
           {actions}
           {showAddButton && onAddClick && (
             <motion.button
@@ -103,6 +103,6 @@ const PageLayout = ({
       )}
     </div>
   )
-}
+})
 
 export default PageLayout 

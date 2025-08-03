@@ -6,7 +6,6 @@ import {
   Trash2, 
   User, 
   Shield, 
-  Search,
   Save,
   X,
   Eye,
@@ -18,6 +17,8 @@ import { apiService } from '@/services/api'
 import PageLayout from '../components/PageLayout'
 import Card from '../components/ui/Card'
 import Modal from '../components/ui/Modal'
+import SearchFilters from '../components/ui/SearchFilters'
+import ActionButton from '../components/ui/ActionButton'
 
 interface User {
   id: number
@@ -125,6 +126,12 @@ const UsersManagement = () => {
     resetForm()
   }
 
+  const filterOptions = [
+    { value: 'all', label: 'Todos os Usuários' },
+    { value: 'admin', label: 'Administradores' },
+    { value: 'user', label: 'Usuários Comuns' }
+  ]
+
   const filteredUsers = users.filter(user =>
     user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.role.toLowerCase().includes(searchTerm.toLowerCase())
@@ -214,16 +221,15 @@ const UsersManagement = () => {
       </div>
 
       {/* Busca */}
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-metal-text-secondary" />
-        <input
-          type="text"
-          placeholder="Buscar usuários..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="form-input pl-10"
-        />
-      </div>
+      <SearchFilters
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Buscar usuários..."
+        filterOptions={filterOptions}
+        filterValue=""
+        onFilterChange={() => {}}
+        filterPlaceholder="Filtrar por função"
+      />
 
       {/* Lista de Usuários */}
       <div className="bg-metal-card rounded-lg border border-metal-light-gray/20 overflow-hidden">

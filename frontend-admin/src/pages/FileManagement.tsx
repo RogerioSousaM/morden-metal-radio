@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Upload, Image, Video, File, Trash2, Eye, Download, Search, Filter, Loader2, AlertCircle } from 'lucide-react'
+import { Upload, Image, Video, File, Trash2, Eye, Download, AlertCircle } from 'lucide-react'
 import FileUpload from '../components/FileUpload'
 import { apiService } from '../services/api'
 import PageLayout from '../components/PageLayout'
 import Card from '../components/ui/Card'
 import Modal from '../components/ui/Modal'
+import SearchFilters from '../components/ui/SearchFilters'
+import ActionButton from '../components/ui/ActionButton'
 
 interface FileItem {
   id: number
@@ -127,6 +129,14 @@ const FileManagement: React.FC = () => {
     setShowUpload(true)
   }
 
+  const filterOptions = [
+    { value: 'all', label: 'Todos os Tipos' },
+    { value: 'news', label: 'Notícias' },
+    { value: 'gallery', label: 'Galeria' },
+    { value: 'videos', label: 'Vídeos' },
+    { value: 'thumbnails', label: 'Thumbnails' }
+  ]
+
   return (
     <PageLayout
       title="Gestão de Arquivos"
@@ -229,35 +239,18 @@ const FileManagement: React.FC = () => {
       )}
 
       {/* Filtros e Busca */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-metal-text-secondary" />
-          <input
-            type="text"
-            placeholder="Buscar arquivos..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="form-input pl-10"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-metal-text-secondary" />
-          <select
-            value={selectedMediaType}
-            onChange={(e) => {
-              setSelectedMediaType(e.target.value)
-              setCurrentPage(1)
-            }}
-            className="form-select"
-          >
-            <option value="all">Todos os Tipos</option>
-            <option value="news">Notícias</option>
-            <option value="gallery">Galeria</option>
-            <option value="videos">Vídeos</option>
-            <option value="thumbnails">Thumbnails</option>
-          </select>
-        </div>
-      </div>
+      <SearchFilters
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Buscar arquivos..."
+        filterOptions={filterOptions}
+        filterValue={selectedMediaType}
+        onFilterChange={(value) => {
+          setSelectedMediaType(value)
+          setCurrentPage(1)
+        }}
+        filterPlaceholder="Filtrar por tipo"
+      />
 
       {/* Lista de Arquivos */}
       <div className="bg-metal-card rounded-lg border border-metal-light-gray/20 overflow-hidden">

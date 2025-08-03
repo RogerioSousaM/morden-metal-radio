@@ -230,12 +230,53 @@ h6, .h6 {
   h2, .h2 {
     font-size: 1.5rem; /* 24px */
   }
+
+  /* Otimização para mobile */
+  .search-filters {
+    @apply flex-col gap-3;
+  }
 }
 
 @media (max-width: 480px) {
   h1, .h1 {
     font-size: 1.75rem; /* 28px */
   }
+
+  /* Espaçamento otimizado para telas pequenas */
+  .page-layout {
+    @apply p-4 space-y-4;
+  }
+}
+
+/* ===== PERFORMANCE OPTIMIZATIONS ===== */
+/* Prevenção de layout shift */
+.page-layout {
+  min-height: 100vh;
+}
+
+/* Otimização de animações */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== CONSISTENCY IMPROVEMENTS ===== */
+/* Espaçamento padronizado entre seções */
+.section-spacing {
+  @apply mt-6 mb-10;
+}
+
+/* Container padronizado para busca e filtros */
+.search-filters-container {
+  @apply mb-6;
+}
+
+/* Botões de ação padronizados */
+.action-buttons {
+  @apply flex items-center gap-3;
 }
 
 /* ===== ACCESSIBILITY ===== */

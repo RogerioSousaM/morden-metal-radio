@@ -9,7 +9,6 @@ import {
   Calendar, 
   User, 
   FileText,
-  Search,
   Save,
   X,
   AlertCircle
@@ -18,6 +17,8 @@ import { apiService } from '@/services/api'
 import PageLayout from '../components/PageLayout'
 import Card from '../components/ui/Card'
 import Modal from '../components/ui/Modal'
+import SearchFilters from '../components/ui/SearchFilters'
+import ActionButton from '../components/ui/ActionButton'
 
 interface News {
   id: number
@@ -133,6 +134,12 @@ const NewsManagement = () => {
     resetForm()
   }
 
+  const filterOptions = [
+    { value: 'all', label: 'Todas as Notícias' },
+    { value: 'published', label: 'Publicadas' },
+    { value: 'draft', label: 'Rascunhos' }
+  ]
+
   const filteredNews = news.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.content.toLowerCase().includes(searchTerm.toLowerCase())
@@ -227,27 +234,15 @@ const NewsManagement = () => {
       </div>
 
       {/* Filtros e Busca */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-metal-text-secondary" />
-          <input
-            type="text"
-            placeholder="Buscar notícias..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="form-input pl-10"
-          />
-        </div>
-        <select
-          value={filterPublished}
-          onChange={(e) => setFilterPublished(e.target.value as any)}
-          className="form-select"
-        >
-          <option value="all">Todas</option>
-          <option value="published">Publicadas</option>
-          <option value="draft">Rascunhos</option>
-        </select>
-      </div>
+      <SearchFilters
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Buscar notícias..."
+        filterOptions={filterOptions}
+        filterValue={filterPublished}
+        onFilterChange={(value) => setFilterPublished(value as any)}
+        filterPlaceholder="Filtrar por status"
+      />
 
       {/* Lista de Notícias */}
       <div className="bg-metal-card rounded-lg border border-metal-light-gray/20 overflow-hidden">

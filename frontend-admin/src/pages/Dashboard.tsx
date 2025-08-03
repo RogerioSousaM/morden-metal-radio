@@ -175,26 +175,26 @@ const Dashboard = () => {
                 <CardTitle>Ações Rápidas</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 auto-rows-fr min-h-[120px]">
                   {quickActions.map((action) => {
                     const Icon = action.icon
                     return (
                       <motion.a
                         key={action.title}
                         href={action.href}
-                        className={`p-4 rounded-lg border border-metal-border hover:border-metal-orange/30 transition-all duration-200 group ${action.color}`}
+                        className={`h-full p-2.5 rounded-lg border border-metal-border hover:border-metal-orange/30 transition-all duration-200 group ${action.color}`}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                       >
-                        <div className="flex items-start gap-4">
-                          <div className="w-12 h-12 bg-metal-card rounded-lg flex items-center justify-center group-hover:bg-metal-orange/20 transition-colors flex-shrink-0">
-                            <Icon className="w-6 h-6 text-metal-orange" />
+                        <div className="flex items-start gap-2.5 h-full">
+                          <div className="w-10 h-10 bg-metal-card rounded-lg flex items-center justify-center group-hover:bg-metal-orange/20 transition-colors flex-shrink-0">
+                            <Icon className="w-5 h-5 text-metal-orange" />
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-metal-text group-hover:text-metal-orange transition-colors leading-tight">
-                              {action.title}
-                            </h3>
-                            <p className="text-sm text-metal-text-secondary mt-2 leading-relaxed">
+                          <div className="flex-1 min-w-0 flex flex-col justify-start">
+                                                         <h3 className="font-semibold text-metal-text group-hover:text-metal-orange transition-colors leading-tight text-xs truncate">
+                               {action.title}
+                             </h3>
+                            <p className="text-xs text-metal-text-secondary mt-1 leading-relaxed flex-1">
                               {action.description}
                             </p>
                           </div>
