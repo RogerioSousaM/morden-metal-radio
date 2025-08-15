@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Eye, EyeOff, Lock, User, AlertCircle } from 'lucide-react'
 import { useState } from 'react'
+import { apiService } from '../services/api'
 
 interface LoginProps {
   onLogin?: () => void
@@ -21,31 +22,25 @@ const Login = ({ onLogin }: LoginProps) => {
     setIsLoading(true)
 
     try {
-      // Simulação de validação de credenciais
-      // Em produção, isso seria uma chamada para a API
-      if (formData.username === 'admin' && formData.password === 'mordenmetal2024') {
-        // Simular delay de autenticação
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        // Salvar token de autenticação
-        localStorage.setItem('adminToken', 'fake-jwt-token')
-        localStorage.setItem('adminUser', JSON.stringify({
-          username: formData.username,
-          role: 'admin'
-        }))
-        
-        // Chamar callback de login se fornecido
-        if (onLogin) {
-          onLogin()
-        } else {
-          // Redirecionar para o dashboard
-          window.location.href = '/admin/dashboard'
-        }
+      // Usar a API real de autenticação
+      const response = await apiService.login({
+        username: formData.username,
+        password: formData.password
+      })
+      
+      // Login bem-sucedido
+      console.log('Login bem-sucedido:', response)
+      
+      // Chamar callback de login se fornecido
+      if (onLogin) {
+        onLogin()
       } else {
-        setError('Credenciais inválidas. Tente novamente.')
+        // Redirecionar para o dashboard
+        window.location.href = '/admin/dashboard'
       }
-    } catch (err) {
-      setError('Erro ao fazer login. Tente novamente.')
+    } catch (err: any) {
+      console.error('Erro no login:', err)
+      setError(err.message || 'Erro ao fazer login. Tente novamente.')
     } finally {
       setIsLoading(false)
     }

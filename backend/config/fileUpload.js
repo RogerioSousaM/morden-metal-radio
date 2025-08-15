@@ -24,13 +24,7 @@ const UPLOAD_CONFIG = {
       maxHeight: 1440,
       quality: 90
     },
-    videos: {
-      folder: 'videos',
-      allowedTypes: ['video/mp4', 'video/webm', 'video/ogg', 'video/avi'],
-      maxSize: 100 * 1024 * 1024, // 100MB
-      maxDuration: 300, // 5 minutos
-      quality: 'high'
-    },
+
     thumbnails: {
       folder: 'thumbnails',
       allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
@@ -64,7 +58,7 @@ function createUploadDirectories() {
     UPLOAD_CONFIG.baseDir,
     path.join(UPLOAD_CONFIG.baseDir, 'news'),
     path.join(UPLOAD_CONFIG.baseDir, 'gallery'),
-    path.join(UPLOAD_CONFIG.baseDir, 'videos'),
+
     path.join(UPLOAD_CONFIG.baseDir, 'thumbnails'),
     path.join(UPLOAD_CONFIG.baseDir, 'temp'),
     path.join(UPLOAD_CONFIG.baseDir, 'backup')

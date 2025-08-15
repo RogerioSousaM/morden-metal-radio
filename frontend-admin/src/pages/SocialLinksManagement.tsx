@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Instagram, Youtube, Twitter, Music, Save, RotateCcw,
-  ExternalLink, CheckCircle, AlertCircle, Loader2, Share2
+  ExternalLink, CheckCircle, AlertCircle, Share2
 } from 'lucide-react'
 import { apiService } from '../services/api'
 import PageLayout from '../components/PageLayout'

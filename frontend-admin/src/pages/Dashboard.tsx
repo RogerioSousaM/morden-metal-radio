@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { 
-  Users, Music, Calendar, FileText, TrendingUp, 
-  Radio, Settings,
+  Users, Calendar, FileText, 
+  Radio, Settings, Image,
   ArrowUpRight, ArrowDownRight, Activity
 } from 'lucide-react'
 import PageLayout from '../components/PageLayout'
@@ -9,14 +9,6 @@ import Card, { CardHeader, CardTitle, CardContent } from '../components/ui/Card'
 
 const Dashboard = () => {
   const stats = [
-    {
-      title: 'Total de Bandas',
-      value: '24',
-      change: '+12%',
-      changeType: 'increase' as const,
-      icon: Music,
-      color: 'from-metal-orange to-orange-600'
-    },
     {
       title: 'Programas Ativos',
       value: '8',
@@ -40,17 +32,18 @@ const Dashboard = () => {
       changeType: 'decrease' as const,
       icon: Users,
       color: 'from-metal-blue to-blue-600'
+    },
+    {
+      title: 'Carrosséis',
+      value: '3',
+      change: '+1%',
+      changeType: 'increase' as const,
+      icon: Image,
+      color: 'from-metal-purple to-purple-600'
     }
   ]
 
   const quickActions = [
-    {
-      title: 'Gerenciar Bandas',
-      description: 'Adicionar, editar ou remover bandas',
-      icon: Music,
-      href: '/admin/bands',
-      color: 'bg-gradient-to-br from-metal-orange/20 to-orange-600/20'
-    },
     {
       title: 'Programação',
       description: 'Configurar horários e programas',
@@ -65,22 +58,9 @@ const Dashboard = () => {
       href: '/admin/files',
       color: 'bg-gradient-to-br from-metal-green/20 to-green-600/20'
     },
-    {
-      title: 'Top do Mês',
-      description: 'Configurar banda em destaque',
-      icon: TrendingUp,
-      href: '/admin/top-month',
-      color: 'bg-gradient-to-br from-metal-yellow/20 to-yellow-600/20'
-    }
   ]
 
   const recentActivity = [
-    {
-      action: 'Nova banda adicionada',
-      target: 'Metallica',
-      time: '2 minutos atrás',
-      type: 'add' as const
-    },
     {
       action: 'Programa atualizado',
       target: 'Metal Show',
@@ -94,11 +74,11 @@ const Dashboard = () => {
       type: 'delete' as const
     },
     {
-      action: 'Configuração alterada',
-      target: 'Top do Mês',
-      time: '2 horas atrás',
-      type: 'config' as const
-    }
+      action: 'Usuário adicionado',
+      target: 'Novo Admin',
+      time: '3 horas atrás',
+      type: 'add' as const
+    },
   ]
 
   const containerVariants = {
@@ -267,7 +247,7 @@ const Dashboard = () => {
                 </div>
                 <div className="text-center">
                   <div className="w-16 h-16 bg-metal-orange/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <TrendingUp className="w-8 h-8 text-metal-orange" />
+                    <Activity className="w-8 h-8 text-metal-orange" />
                   </div>
                   <h3 className="font-semibold text-metal-text">Performance</h3>
                   <p className="text-sm text-metal-orange">Excelente</p>

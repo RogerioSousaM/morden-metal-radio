@@ -69,13 +69,7 @@
     background: rgba(224, 78, 27, 0.05);
   }
   
-  .live-indicator {
-    @apply flex items-center gap-2 text-metal-red font-medium;
-  }
-  
-  .live-dot {
-    @apply w-3 h-3 bg-metal-red rounded-full animate-glow-pulse;
-  }
+
 
   .card {
     @apply bg-metal-card backdrop-blur-sm rounded-lg p-6 border border-metal-light-gray/20 hover:border-metal-orange/30 transition-all duration-300 shadow-lg hover:shadow-xl;
@@ -97,6 +91,16 @@
     @apply text-metal-orange;
   }
 
+  /* Live indicator */
+  .live-indicator {
+    @apply flex items-center gap-2 text-metal-red font-medium;
+  }
+  
+  .live-dot {
+    @apply w-3 h-3 bg-metal-red rounded-full animate-glow-pulse;
+  }
+
+  /* Program cards */
   .program-card {
     @apply bg-metal-card backdrop-blur-sm rounded-lg p-6 border border-metal-light-gray/20 hover:border-metal-orange/30 transition-all duration-300 cursor-pointer relative;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
@@ -110,81 +114,6 @@
   .program-card.live {
     border-color: rgba(224, 78, 27, 0.4);
     box-shadow: 0 0 20px rgba(224, 78, 27, 0.1);
-  }
-
-  .audio-player {
-    @apply bg-metal-card/95 backdrop-blur-lg border-t border-metal-light-gray/30 shadow-2xl;
-    backdrop-filter: blur(20px);
-  }
-
-  .play-button {
-    @apply bg-gradient-to-r from-metal-orange to-metal-accent rounded-full flex items-center justify-center hover:from-metal-accent hover:to-metal-orange transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-110;
-    width: 48px;
-    height: 48px;
-    box-shadow: 0 0 20px rgba(224, 78, 27, 0.3);
-  }
-
-  .play-button:hover {
-    box-shadow: 0 0 30px rgba(224, 78, 27, 0.5);
-  }
-
-  @media (min-width: 1024px) {
-    .play-button {
-      width: 60px;
-      height: 60px;
-    }
-  }
-
-  /* Volume slider styles */
-  .slider {
-    background: transparent;
-  }
-
-  .slider::-webkit-slider-track {
-    background: #2a2a2a;
-    border-radius: 4px;
-    height: 4px;
-  }
-
-  .slider::-webkit-slider-thumb {
-    appearance: none;
-    background: #E04E1B;
-    border-radius: 50%;
-    width: 12px;
-    height: 12px;
-    cursor: pointer;
-    box-shadow: 0 0 10px rgba(224, 78, 27, 0.3);
-    transition: all 0.2s ease;
-  }
-
-  .slider::-webkit-slider-thumb:hover {
-    background: #FF5722;
-    transform: scale(1.2);
-    box-shadow: 0 0 15px rgba(224, 78, 27, 0.5);
-  }
-
-  .slider::-moz-range-track {
-    background: #2a2a2a;
-    border-radius: 4px;
-    height: 4px;
-    border: none;
-  }
-
-  .slider::-moz-range-thumb {
-    background: #E04E1B;
-    border-radius: 50%;
-    width: 12px;
-    height: 12px;
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 0 10px rgba(224, 78, 27, 0.3);
-    transition: all 0.2s ease;
-  }
-
-  .slider::-moz-range-thumb:hover {
-    background: #FF5722;
-    transform: scale(1.2);
-    box-shadow: 0 0 15px rgba(224, 78, 27, 0.5);
   }
 
   /* Carousel enhancements */
@@ -241,6 +170,9 @@
   .carousel-image {
     filter: brightness(0.7) contrast(1.2) saturate(0.9);
   }
+  
+
+
 
   /* Custom scrollbar */
   ::-webkit-scrollbar {
@@ -308,6 +240,14 @@
 
   .tooltip:hover::after {
     opacity: 1;
+  }
+
+  /* Line clamp utility */
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   /* Reduced motion for accessibility */

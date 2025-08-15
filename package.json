@@ -1,6 +1,21 @@
 {
+  "name": "morden-metal-radio",
+  "version": "1.0.0",
+  "description": "Rádio Morden Metal - Sistema completo de streaming e administração",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:admin\" \"npm run dev:user\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:admin": "cd frontend-admin && npm run dev",
+    "dev:user": "cd frontend-user && npm run dev",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend-admin && npm install && cd ../frontend-user && npm install",
+    "build": "cd frontend-admin && npm run build && cd ../frontend-user && npm run build",
+    "start": "cd backend && npm start"
+  },
   "dependencies": {
     "node-fetch": "^2.7.0",
     "puppeteer": "^24.15.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   }
 }

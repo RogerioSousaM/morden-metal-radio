@@ -46,6 +46,10 @@ interface News {
   isPublished: boolean
   createdAt: string
   updatedAt: string
+  bandName?: string
+  mediaUrls?: string
+  newsSummary?: string
+  sourceLink?: string
 }
 
 interface User {
@@ -68,27 +72,7 @@ interface CarouselSlide {
   createdAt: string
 }
 
-interface TopMonthBand {
-  id: number
-  name: string
-  genre: string
-  description: string
-  image: string
-}
 
-interface TopMonthConfig {
-  id: number
-  bandId: number
-  bandName: string
-  albumName: string
-  albumImage: string
-  playCount: number
-  newsLink: string
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
-  band: TopMonthBand
-}
 
 interface SocialLinks {
   instagram: string
@@ -97,14 +81,36 @@ interface SocialLinks {
   tiktok: string
 }
 
+interface Filme {
+  id: number
+  titulo: string
+  descricao: string
+  ano: number
+  nota: number
+  imagem: string | null
+  indicacao_do_mes: boolean
+  created_at: string
+  updated_at: string
+}
+
 class ApiService {
-  private getAuthHeaders() {
+  private getAuthHeaders(): Record<string, string> {
     const token = localStorage.getItem('adminToken')
+    if (!token) {
+      console.warn('Token não encontrado no localStorage')
+      return {
+        'Content-Type': 'application/json'
+      }
+    }
     return {
       'Content-Type': 'application/json',
-      'Authorization': token ? `Bearer ${token}` : ''
+      'Authorization': `Bearer ${token}`
     }
   }
+
+
+
+
 
   // Autenticação
   async login(credentials: LoginCredentials) {
@@ -136,6 +142,7 @@ class ApiService {
 
   logout() {
     localStorage.removeItem('adminToken')
+    localStorage.removeItem('adminUser')
   }
 
   // Bandas
@@ -657,6 +664,7 @@ class ApiService {
   }
 
   // Top do Mês - Configuração
+  /*
   async getTopMonthConfig(): Promise<TopMonthConfig> {
     try {
       const response = await fetch(`${API_BASE_URL}/top-month/config`, {
@@ -782,6 +790,7 @@ class ApiService {
       throw error
     }
   }
+  */
 
   // Links Sociais
   async getSocialLinks(): Promise<SocialLinks> {
@@ -837,7 +846,112 @@ class ApiService {
       throw error
     }
   }
+
+  // Métodos para Filmes
+  async getFilmes(): Promise<Filme[]> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/filmes`, {
+        headers: this.getAuthHeaders()
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao buscar filmes')
+      }
+
+      const data = await response.json()
+      return data.filmes || []
+    } catch (error) {
+      console.error('Erro ao buscar filmes:', error)
+      throw error
+    }
+  }
+
+  async createFilme(filme: Omit<Filme, 'id' | 'created_at' | 'updated_at'>): Promise<Filme> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/filmes`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(filme)
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao criar filme')
+      }
+
+      const data = await response.json()
+      return data.filme
+    } catch (error) {
+      console.error('Erro ao criar filme:', error)
+      throw error
+    }
+  }
+
+  async updateFilme(id: number, filme: Partial<Filme>): Promise<Filme> {
+    try {
+      console.log('Enviando requisição PUT para:', `${API_BASE_URL}/filmes/${id}`)
+      console.log('Dados sendo enviados:', filme)
+      
+      const response = await fetch(`${API_BASE_URL}/filmes/${id}`, {
+        method: 'PUT',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(filme)
+      })
+
+      console.log('Status da resposta:', response.status)
+      console.log('Headers da resposta:', response.headers)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Resposta de erro do servidor:', errorText)
+        throw new Error(`Erro ao atualizar filme: ${response.status} - ${errorText}`)
+      }
+
+      const data = await response.json()
+      console.log('Resposta de sucesso:', data)
+      return data.filme || data
+    } catch (error) {
+      console.error('Erro ao atualizar filme:', error)
+      throw error
+    }
+  }
+
+  async deleteFilme(id: number): Promise<void> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/filmes/${id}`, {
+        method: 'DELETE',
+        headers: this.getAuthHeaders()
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao excluir filme')
+      }
+    } catch (error) {
+      console.error('Erro ao excluir filme:', error)
+      throw error
+    }
+  }
+
+  async getFilmeDestaque(): Promise<Filme | null> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/filmes/destaque`, {
+        headers: this.getAuthHeaders()
+      })
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          return null
+        }
+        throw new Error('Erro ao buscar filme em destaque')
+      }
+
+      const data = await response.json()
+      return data.filme
+    } catch (error) {
+      console.error('Erro ao buscar filme em destaque:', error)
+      throw error
+    }
+  }
 }
 
 export const apiService = new ApiService()
-export type { Band, Program, Stats, LoginCredentials, News, User, CarouselSlide, TopMonthBand, TopMonthConfig, SocialLinks } 
+export type { Band, Program, Stats, LoginCredentials, News, User, CarouselSlide, SocialLinks, Filme } 

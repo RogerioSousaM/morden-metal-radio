@@ -47,12 +47,7 @@ async function checkSchema() {
       console.log(`  - ID: ${user.id} | Username: ${user.username} | Role: ${user.role}`)
     })
     
-    // Bandas
-    const bands = await db.all('SELECT id, name, genre, rating, is_featured FROM bands LIMIT 3')
-    console.log('\n🎵 Bandas:')
-    bands.forEach(band => {
-      console.log(`  - ID: ${band.id} | ${band.name} (${band.genre}) | Rating: ${band.rating} | Featured: ${band.is_featured}`)
-    })
+
     
     // Programas
     const programs = await db.all('SELECT id, title, start_time, end_time, host FROM programs LIMIT 3')
@@ -65,7 +60,7 @@ async function checkSchema() {
     const stats = await db.all('SELECT * FROM stats LIMIT 3')
     console.log('\n📊 Estatísticas:')
     stats.forEach(stat => {
-      console.log(`  - ID: ${stat.id} | Listeners: ${stat.listeners} | Top Band: ${stat.top_band} | Next Program: ${stat.next_program}`)
+      console.log(`  - ID: ${stat.id} | Listeners: ${stat.listeners} | Next Program: ${stat.next_program}`)
     })
     
     console.log('\n✅ Verificação da estrutura concluída!')

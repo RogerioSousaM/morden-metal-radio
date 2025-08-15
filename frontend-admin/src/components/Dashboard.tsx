@@ -11,9 +11,9 @@ const Dashboard = () => {
   })
 
   const [recentActivity] = useState([
-    { id: 1, action: 'Nova banda adicionada', target: 'Sleep Token', time: '2 min atrás' },
-    { id: 2, action: 'Programa editado', target: 'Metal Noturno', time: '15 min atrás' },
-    { id: 3, action: 'Usuário logado', target: 'admin', time: '1 hora atrás' }
+    { id: 1, action: 'Programa editado', target: 'Metal Noturno', time: '15 min atrás' },
+    { id: 2, action: 'Usuário logado', target: 'admin', time: '1 hora atrás' },
+    { id: 3, action: 'Arquivo enviado', target: 'nova_musica.mp3', time: '2 horas atrás' }
   ])
 
   useEffect(() => {
@@ -135,9 +135,9 @@ const Dashboard = () => {
         <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
           <h3 className="text-lg font-semibold text-white mb-4">Ações Rápidas</h3>
           <div className="space-y-3">
-            <button className="w-full flex items-center gap-3 p-3 bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/30 rounded-lg text-orange-300 hover:text-orange-200 transition-all duration-300">
+            <button className="w-full flex items-center gap-3 p-3 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 rounded-lg text-green-300 hover:text-green-200 transition-all duration-300">
               <Plus className="w-5 h-5" />
-              <span>Adicionar Nova Banda</span>
+              <span>Upload de Arquivo</span>
             </button>
             <button className="w-full flex items-center gap-3 p-3 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-lg text-blue-300 hover:text-blue-200 transition-all duration-300">
               <Edit className="w-5 h-5" />

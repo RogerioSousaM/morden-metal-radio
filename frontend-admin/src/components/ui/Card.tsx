@@ -26,7 +26,7 @@ const Card = ({ children, className = '', onClick, hover = false, delay = 0 }: C
     }
   }
 
-  const hoverVariants = hover ? {
+  const hoverVariants: any = hover ? {
     hover: { 
       y: -4,
       transition: { duration: 0.2 }

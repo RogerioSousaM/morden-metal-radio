@@ -3,10 +3,10 @@ import { motion } from 'framer-motion'
 import Header from './components/Header'
 import Hero from './components/Hero'
 import ProgramGrid from './components/ProgramGrid'
-import FeaturedBands from './components/FeaturedBands'
+import Filmaço from './components/Filmaço'
+import MosaicGallery from './components/MosaicGallery'
 import Footer from './components/Footer'
-import AudioPlayer from './components/AudioPlayer'
-import TopMonthPopup from './components/TopMonthPopup'
+
 
 // Componente para o site principal
 const MainSite = () => {
@@ -21,12 +21,11 @@ const MainSite = () => {
         <main>
           <Hero />
           <ProgramGrid />
-          <FeaturedBands />
+          <Filmaço />
+          <MosaicGallery />
         </main>
         <Footer />
-        <div className="h-20"></div>
-        <AudioPlayer />
-        <TopMonthPopup />
+
       </motion.div>
     </div>
   )

@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Edit, Trash2, Clock, Users, Music, Save, X, AlertTriangle, Loader2 } from 'lucide-react'
+import { Edit, Trash2, Clock, Users, Save, AlertTriangle, Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import PageLayout from '../components/PageLayout'
 import Card from '../components/ui/Card'
@@ -57,6 +57,8 @@ const ScheduleManagement = () => {
     listeners: ''
   })
   const [timeConflict, setTimeConflict] = useState<string | null>(null)
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const [previewProgram, setPreviewProgram] = useState<Program | null>(null)
 
   const checkTimeConflict = (startTime: string, endTime: string, excludeId?: number) => {
     const start = new Date(`2000-01-01 ${startTime}`)
@@ -165,6 +167,16 @@ const ScheduleManagement = () => {
     setTimeConflict(null)
   }
 
+  const handlePreview = (program: Program) => {
+    setPreviewProgram(program)
+    setIsPreviewOpen(true)
+  }
+
+  const closePreview = () => {
+    setIsPreviewOpen(false)
+    setPreviewProgram(null)
+  }
+
   return (
     <PageLayout
       title="Gestão de Programação"
@@ -243,6 +255,14 @@ const ScheduleManagement = () => {
                 whileTap={{ scale: 0.98 }}
               >
                 <Trash2 className="w-4 h-4" />
+              </motion.button>
+              <motion.button
+                onClick={() => handlePreview(program)}
+                className="bg-blue-500 text-white px-2 py-1 rounded ml-2"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Visualizar como usuário
               </motion.button>
             </div>
           </Card>
@@ -397,8 +417,27 @@ const ScheduleManagement = () => {
           </div>
         </form>
       </Modal>
+
+      {/* Modal de preview */}
+      <Modal isOpen={isPreviewOpen} onClose={closePreview} title="Visualização do Usuário">
+        {previewProgram && (
+          <div className="flex flex-col items-center p-4">
+            <h2 className="text-xl font-bold mb-2">{previewProgram.title}</h2>
+            <span className="text-sm text-gray-500 mb-1">{previewProgram.genre}</span>
+            <p className="mb-2 text-center">{previewProgram.description}</p>
+            <div className="flex gap-4 mb-2">
+              <span><Clock size={18}/> {previewProgram.startTime} - {previewProgram.endTime}</span>
+              <span><Users size={18}/> {previewProgram.listeners} ouvintes</span>
+              {previewProgram.isLive && (
+                <span className="bg-red-300 text-red-900 px-2 py-1 rounded">Ao vivo</span>
+              )}
+            </div>
+            <span className="text-sm text-gray-500">Host: {previewProgram.host}</span>
+          </div>
+        )}
+      </Modal>
     </PageLayout>
   )
 }
 
-export default ScheduleManagement 
+export default ScheduleManagement

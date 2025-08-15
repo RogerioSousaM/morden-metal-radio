@@ -3,7 +3,7 @@ import { Upload, X, Image, Video, File, CheckCircle, AlertCircle } from 'lucide-
 import { apiService } from '../services/api'
 
 interface FileUploadProps {
-  mediaType: 'news' | 'gallery' | 'videos' | 'thumbnails'
+  mediaType: 'news' | 'gallery' | 'thumbnails'
   onUploadSuccess?: (files: any[]) => void
   onUploadError?: (error: string) => void
   maxFiles?: number
@@ -45,12 +45,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'],
         maxSize: 10 * 1024 * 1024
       },
-      videos: {
-        title: 'Vídeos',
-        description: 'MP4, WebM, OGG, AVI até 100MB',
-        allowedTypes: ['video/mp4', 'video/webm', 'video/ogg', 'video/avi'],
-        maxSize: 100 * 1024 * 1024
-      },
+
       thumbnails: {
         title: 'Thumbnails',
         description: 'JPG, PNG, WebP até 2MB',

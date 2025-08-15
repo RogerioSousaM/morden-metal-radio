@@ -1,13 +1,11 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { 
-  Plus, 
   Edit, 
   Trash2, 
   User, 
   Shield, 
   Save,
-  X,
   Eye,
   EyeOff,
   Lock,
@@ -18,7 +16,7 @@ import PageLayout from '../components/PageLayout'
 import Card from '../components/ui/Card'
 import Modal from '../components/ui/Modal'
 import SearchFilters from '../components/ui/SearchFilters'
-import ActionButton from '../components/ui/ActionButton'
+
 
 interface User {
   id: number

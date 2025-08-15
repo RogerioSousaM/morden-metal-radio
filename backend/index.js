@@ -10,8 +10,10 @@ const Database = require('../database/database')
 // Importar rotas de upload
 const fileUploadRoutes = require('./routes/fileUpload')
 const carouselRoutes = require('./routes/carousel')
-const topMonthRoutes = require('./routes/topMonth')
+
 const socialLinksRoutes = require('./routes/socialLinks')
+const filmesRoutes = require('./routes/filmes')
+const destaquesRoutes = require('./routes/destaques')
 
 // Importar middleware de autenticação
 const { authenticateToken } = require('./middleware/auth')
@@ -58,7 +60,15 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 const { body, validationResult } = require('express-validator')
 
 // Inicializar banco de dados
-db.init().catch(console.error)
+let dbReady = false
+db.init()
+  .then(() => {
+    dbReady = true
+    console.log('✅ Banco de dados inicializado com sucesso')
+  })
+  .catch((error) => {
+    console.error('❌ Erro ao inicializar banco de dados:', error)
+  })
 
 // Middleware de autenticação já importado do arquivo separado
 
@@ -67,6 +77,14 @@ const validate = (req, res, next) => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() })
+  }
+  next()
+}
+
+// Middleware para verificar se o banco está pronto
+const checkDbReady = (req, res, next) => {
+  if (!dbReady) {
+    return res.status(503).json({ error: 'Serviço temporariamente indisponível' })
   }
   next()
 }
@@ -115,105 +133,7 @@ app.post('/api/auth/login', [
   }
 })
 
-// Rota pública para buscar bandas (frontend-user)
-app.get('/api/bands/public', async (req, res) => {
-  try {
-    const bands = await db.all('SELECT * FROM bands ORDER BY created_at DESC')
-    res.json(bands)
-  } catch (error) {
-    console.error('Erro ao buscar bandas públicas:', error)
-    res.status(500).json({ error: 'Erro interno do servidor' })
-  }
-})
 
-// Rotas de bandas (protegidas)
-app.get('/api/bands', authenticateToken, async (req, res) => {
-  try {
-    const bands = await db.all('SELECT * FROM bands ORDER BY created_at DESC')
-    res.json(bands)
-  } catch (error) {
-    console.error('Erro ao buscar bandas:', error)
-    res.status(500).json({ error: 'Erro interno do servidor' })
-  }
-})
-
-app.post('/api/bands', [
-  authenticateToken,
-  body('name').trim().isLength({ min: 1, max: 100 }).escape(),
-  body('genre').trim().isLength({ min: 1, max: 50 }).escape(),
-  body('description').trim().isLength({ min: 1, max: 300 }).escape(),
-  validate
-], async (req, res) => {
-  try {
-    const { name, genre, description, listeners, rating, isFeatured, image } = req.body
-
-    // Validação adicional
-    if (rating < 0 || rating > 5) {
-      return res.status(400).json({ error: 'Avaliação deve estar entre 0 e 5' })
-    }
-
-    const result = await db.run(
-      `INSERT INTO bands (name, genre, description, listeners, rating, is_featured, image) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [name, genre, description, listeners || '0', parseFloat(rating) || 0, Boolean(isFeatured), image || '']
-    )
-
-    const newBand = await db.get('SELECT * FROM bands WHERE id = ?', [result.id])
-    res.status(201).json(newBand)
-  } catch (error) {
-    console.error('Erro ao criar banda:', error)
-    res.status(500).json({ error: 'Erro interno do servidor' })
-  }
-})
-
-app.put('/api/bands/:id', [
-  authenticateToken,
-  body('name').trim().isLength({ min: 1, max: 100 }).escape(),
-  body('genre').trim().isLength({ min: 1, max: 50 }).escape(),
-  body('description').trim().isLength({ min: 1, max: 300 }).escape(),
-  validate
-], async (req, res) => {
-  try {
-    const { id } = req.params
-    const { name, genre, description, listeners, rating, isFeatured, image } = req.body
-
-    // Verificar se a banda existe
-    const existingBand = await db.get('SELECT * FROM bands WHERE id = ?', [id])
-    if (!existingBand) {
-      return res.status(404).json({ error: 'Banda não encontrada' })
-    }
-
-    await db.run(
-      `UPDATE bands SET name = ?, genre = ?, description = ?, listeners = ?, rating = ?, is_featured = ?, image = ?, updated_at = CURRENT_TIMESTAMP 
-       WHERE id = ?`,
-      [name, genre, description, listeners || existingBand.listeners, parseFloat(rating) || existingBand.rating, Boolean(isFeatured), image || existingBand.image, id]
-    )
-
-    const updatedBand = await db.get('SELECT * FROM bands WHERE id = ?', [id])
-    res.json(updatedBand)
-  } catch (error) {
-    console.error('Erro ao atualizar banda:', error)
-    res.status(500).json({ error: 'Erro interno do servidor' })
-  }
-})
-
-app.delete('/api/bands/:id', authenticateToken, async (req, res) => {
-  try {
-    const { id } = req.params
-    
-    // Verificar se a banda existe
-    const existingBand = await db.get('SELECT * FROM bands WHERE id = ?', [id])
-    if (!existingBand) {
-      return res.status(404).json({ error: 'Banda não encontrada' })
-    }
-
-    await db.run('DELETE FROM bands WHERE id = ?', [id])
-    res.json({ message: 'Banda removida com sucesso' })
-  } catch (error) {
-    console.error('Erro ao deletar banda:', error)
-    res.status(500).json({ error: 'Erro interno do servidor' })
-  }
-})
 
 // Rotas de programação (protegidas)
 app.get('/api/programs', authenticateToken, async (req, res) => {
@@ -283,24 +203,71 @@ app.use('/api/files', fileUploadRoutes)
 // Rotas do carrossel
 app.use('/api/carousel', carouselRoutes)
 
-// Rotas do Top do Mês
-app.use('/api/top-month', topMonthRoutes)
+
+
 
 // Rotas de Links Sociais
 app.use('/api/social-links', socialLinksRoutes)
+app.use('/api/filmes', checkDbReady, filmesRoutes)
+app.use('/api/destaques', checkDbReady, destaquesRoutes)
 
-// Rotas de notícias (protegidas)
-app.get('/api/news', authenticateToken, async (req, res) => {
+// Rota pública para buscar destaques publicados (frontend-user)
+app.get('/api/highlights/public', checkDbReady, async (req, res) => {
   try {
-    const news = await db.all('SELECT * FROM news ORDER BY created_at DESC')
-    res.json(news)
+    const highlights = await db.all(`
+      SELECT 
+        id,
+        title,
+        content,
+        image,
+        author,
+        is_published as isPublished,
+        band_name as bandName,
+        media_urls as mediaUrls,
+        news_summary as newsSummary,
+        source_link as sourceLink,
+        created_at as createdAt,
+        updated_at as updatedAt
+      FROM highlights 
+      WHERE is_published = 1 
+      ORDER BY created_at DESC 
+      LIMIT 6
+    `)
+    res.json(highlights)
   } catch (error) {
-    console.error('Erro ao buscar notícias:', error)
+    console.error('Erro ao buscar destaques públicos:', error)
     res.status(500).json({ error: 'Erro interno do servidor' })
   }
 })
 
-app.post('/api/news', [
+// Rotas de destaques (protegidas)
+app.get('/api/highlights', authenticateToken, async (req, res) => {
+  try {
+    const highlights = await db.all(`
+      SELECT 
+        id,
+        title,
+        content,
+        image,
+        author,
+        is_published as isPublished,
+        band_name as bandName,
+        media_urls as mediaUrls,
+        news_summary as newsSummary,
+        source_link as sourceLink,
+        created_at as createdAt,
+        updated_at as updatedAt
+      FROM highlights 
+      ORDER BY created_at DESC
+    `)
+    res.json(highlights)
+  } catch (error) {
+    console.error('Erro ao buscar destaques:', error)
+    res.status(500).json({ error: 'Erro interno do servidor' })
+  }
+})
+
+app.post('/api/highlights', [
   authenticateToken,
   body('title').trim().isLength({ min: 1, max: 200 }).escape(),
   body('content').trim().isLength({ min: 1, max: 5000 }).escape(),
@@ -308,23 +275,45 @@ app.post('/api/news', [
   validate
 ], async (req, res) => {
   try {
-    const { title, content, image, author, isPublished } = req.body
+    const { 
+      title, 
+      content, 
+      image, 
+      author, 
+      isPublished,
+      bandName,
+      mediaUrls,
+      newsSummary,
+      sourceLink
+    } = req.body
 
     const result = await db.run(
-      `INSERT INTO news (title, content, image, author, is_published) 
-       VALUES (?, ?, ?, ?, ?)`,
-      [title, content, image || '', author, Boolean(isPublished)]
+      `INSERT INTO highlights (
+        title, content, image, author, is_published, 
+        band_name, media_urls, news_summary, source_link
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        title, 
+        content, 
+        image || '', 
+        author, 
+        Boolean(isPublished),
+        bandName || '',
+        mediaUrls || '',
+        newsSummary || '',
+        sourceLink || ''
+      ]
     )
 
-    const newNews = await db.get('SELECT * FROM news WHERE id = ?', [result.id])
-    res.status(201).json(newNews)
+    const newHighlight = await db.get('SELECT * FROM highlights WHERE id = ?', [result.id])
+    res.status(201).json(newHighlight)
   } catch (error) {
-    console.error('Erro ao criar notícia:', error)
+    console.error('Erro ao criar destaque:', error)
     res.status(500).json({ error: 'Erro interno do servidor' })
   }
 })
 
-app.put('/api/news/:id', [
+app.put('/api/highlights/:id', [
   authenticateToken,
   body('title').trim().isLength({ min: 1, max: 200 }).escape(),
   body('content').trim().isLength({ min: 1, max: 5000 }).escape(),
@@ -333,42 +322,73 @@ app.put('/api/news/:id', [
 ], async (req, res) => {
   try {
     const { id } = req.params
-    const { title, content, image, author, isPublished } = req.body
+    const { 
+      title, 
+      content, 
+      image, 
+      author, 
+      isPublished,
+      bandName,
+      mediaUrls,
+      newsSummary,
+      sourceLink
+    } = req.body
 
-    // Verificar se a notícia existe
-    const existingNews = await db.get('SELECT * FROM news WHERE id = ?', [id])
-    if (!existingNews) {
-      return res.status(404).json({ error: 'Notícia não encontrada' })
+    // Verificar se o destaque existe
+    const existingHighlight = await db.get('SELECT * FROM highlights WHERE id = ?', [id])
+    if (!existingHighlight) {
+      return res.status(404).json({ error: 'Destaque não encontrado' })
     }
 
     await db.run(
-      `UPDATE news SET title = ?, content = ?, image = ?, author = ?, is_published = ?, updated_at = CURRENT_TIMESTAMP 
+      `UPDATE highlights SET 
+        title = ?, 
+        content = ?, 
+        image = ?, 
+        author = ?, 
+        is_published = ?, 
+        band_name = ?,
+        media_urls = ?,
+        news_summary = ?,
+        source_link = ?,
+        updated_at = CURRENT_TIMESTAMP 
        WHERE id = ?`,
-      [title, content, image || existingNews.image, author, Boolean(isPublished), id]
+      [
+        title, 
+        content, 
+        image || existingHighlight.image, 
+        author, 
+        Boolean(isPublished),
+        bandName || existingHighlight.band_name || '',
+        mediaUrls || existingHighlight.media_urls || '',
+        newsSummary || existingHighlight.news_summary || '',
+        sourceLink || existingHighlight.source_link || '',
+        id
+      ]
     )
 
-    const updatedNews = await db.get('SELECT * FROM news WHERE id = ?', [id])
-    res.json(updatedNews)
+    const updatedHighlight = await db.get('SELECT * FROM highlights WHERE id = ?', [id])
+    res.json(updatedHighlight)
   } catch (error) {
-    console.error('Erro ao atualizar notícia:', error)
+    console.error('Erro ao atualizar destaque:', error)
     res.status(500).json({ error: 'Erro interno do servidor' })
   }
 })
 
-app.delete('/api/news/:id', authenticateToken, async (req, res) => {
+app.delete('/api/highlights/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params
     
-    // Verificar se a notícia existe
-    const existingNews = await db.get('SELECT * FROM news WHERE id = ?', [id])
-    if (!existingNews) {
-      return res.status(404).json({ error: 'Notícia não encontrada' })
+    // Verificar se o destaque existe
+    const existingHighlight = await db.get('SELECT * FROM highlights WHERE id = ?', [id])
+    if (!existingHighlight) {
+      return res.status(404).json({ error: 'Destaque não encontrado' })
     }
 
-    await db.run('DELETE FROM news WHERE id = ?', [id])
-    res.json({ message: 'Notícia removida com sucesso' })
+    await db.run('DELETE FROM highlights WHERE id = ?', [id])
+    res.json({ message: 'Destaque removido com sucesso' })
   } catch (error) {
-    console.error('Erro ao deletar notícia:', error)
+    console.error('Erro ao deletar destaque:', error)
     res.status(500).json({ error: 'Erro interno do servidor' })
   }
 })
@@ -504,15 +524,12 @@ app.get('/api/stream', (req, res) => {
 app.get('/api/stats', authenticateToken, async (req, res) => {
   try {
     const stats = await db.get('SELECT * FROM stats ORDER BY created_at DESC LIMIT 1')
-    const bandsCount = await db.get('SELECT COUNT(*) as count FROM bands')
     const programsCount = await db.get('SELECT COUNT(*) as count FROM programs')
     
     res.json({
       listeners: stats?.listeners || 0,
-      topBand: stats?.top_band || '',
       nextProgram: stats?.next_program || '',
       systemAlerts: stats?.system_alerts || 0,
-      totalBands: bandsCount.count,
       totalPrograms: programsCount.count
     })
   } catch (error) {

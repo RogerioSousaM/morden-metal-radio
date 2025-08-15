@@ -1,97 +1,81 @@
 const Database = require('./database')
 
-async function runMigrations() {
+async function migrateNewsTable() {
   const db = new Database()
   
   try {
-    console.log('🚀 Iniciando migrações...')
-    
-    // Inicializar banco
     await db.init()
+    console.log('✅ Banco de dados conectado')
     
-    // Testar CRUD básico
-    console.log('\n🧪 Testando CRUD básico...')
-    
-    // CREATE - Criar uma nova banda
-    console.log('📝 Criando nova banda...')
-    const newBand = await db.run(
-      `INSERT INTO bands (name, genre, description, listeners, rating, is_featured, image) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [
-        'Spiritbox',
-        'Metalcore',
-        'Metalcore moderno com vocais poderosos e riffs devastadores',
-        '12.8k',
-        4.7,
-        1,
-        'https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=400&h=400&fit=crop&crop=center'
-      ]
-    )
-    console.log('✅ Banda criada com ID:', newBand.id)
-    
-    // READ - Buscar todas as bandas
-    console.log('\n📖 Buscando todas as bandas...')
-    const bands = await db.all('SELECT * FROM bands')
-    console.log(`✅ Encontradas ${bands.length} bandas:`)
-    bands.forEach(band => {
-      console.log(`  - ${band.name} (${band.genre}) - Rating: ${band.rating}`)
-    })
-    
-    // UPDATE - Atualizar uma banda
-    console.log('\n✏️ Atualizando banda...')
-    const updateResult = await db.run(
-      'UPDATE bands SET rating = ? WHERE name = ?',
-      [4.9, 'Spiritbox']
-    )
-    console.log(`✅ Banda atualizada. Registros afetados: ${updateResult.changes}`)
-    
-    // READ - Verificar atualização
-    const updatedBand = await db.get('SELECT * FROM bands WHERE name = ?', ['Spiritbox'])
-    console.log(`✅ Banda atualizada: ${updatedBand.name} - Novo rating: ${updatedBand.rating}`)
-    
-    // DELETE - Deletar uma banda (vamos deletar a que acabamos de criar)
-    console.log('\n🗑️ Deletando banda de teste...')
-    const deleteResult = await db.run('DELETE FROM bands WHERE name = ?', ['Spiritbox'])
-    console.log(`✅ Banda deletada. Registros afetados: ${deleteResult.changes}`)
-    
-    // Verificar tabelas criadas
-    console.log('\n📊 Verificando estrutura do banco...')
-    const tables = await db.all("SELECT name FROM sqlite_master WHERE type='table'")
-    console.log('✅ Tabelas criadas:')
-    tables.forEach(table => {
-      console.log(`  - ${table.name}`)
-    })
-    
-    // Verificar dados em cada tabela
-    console.log('\n📈 Contagem de registros por tabela:')
-    const tableCounts = [
-      { name: 'users', query: 'SELECT COUNT(*) as count FROM users' },
-      { name: 'bands', query: 'SELECT COUNT(*) as count FROM bands' },
-      { name: 'programs', query: 'SELECT COUNT(*) as count FROM programs' },
-      { name: 'news', query: 'SELECT COUNT(*) as count FROM news' },
-      { name: 'images', query: 'SELECT COUNT(*) as count FROM images' },
-      { name: 'videos', query: 'SELECT COUNT(*) as count FROM videos' },
-      { name: 'stats', query: 'SELECT COUNT(*) as count FROM stats' }
+    // Adicionar novos campos à tabela news
+    const migrations = [
+      'ALTER TABLE news ADD COLUMN band_name TEXT',
+      'ALTER TABLE news ADD COLUMN media_urls TEXT', // JSON string
+      'ALTER TABLE news ADD COLUMN news_summary TEXT',
+      'ALTER TABLE news ADD COLUMN source_link TEXT'
     ]
     
-    for (const table of tableCounts) {
-      const result = await db.get(table.query)
-      console.log(`  - ${table.name}: ${result.count} registros`)
+    for (const migration of migrations) {
+      try {
+        await db.run(migration)
+        console.log(`✅ ${migration}`)
+      } catch (error) {
+        if (error.message.includes('duplicate column name')) {
+          console.log(`ℹ️ Campo já existe: ${migration}`)
+        } else {
+          console.error(`❌ Erro na migração: ${migration}`, error.message)
+        }
+      }
     }
     
-    console.log('\n🎉 Migrações concluídas com sucesso!')
-    console.log('📁 Arquivo do banco criado em: server/morden_metal.db')
+    // Inserir dados de exemplo para Currents
+    const currentsData = {
+      title: 'Currents - Novo Single "It Only Gets Darker"',
+      content: 'A banda Currents lançou o sombrio single "It Only Gets Darker", seu primeiro trabalho inédito desde o álbum "The Death We Seek", de 2023.',
+      image: 'https://deadrhetoric.com/wp-content/uploads/2020/05/Currents-band-2020.jpg',
+      author: 'Admin',
+      is_published: 1,
+      band_name: 'Currents',
+      media_urls: JSON.stringify([
+        'https://deadrhetoric.com/wp-content/uploads/2020/05/Currents-band-2020.jpg',
+        'https://akamai.sscdn.co/uploadfile/letras/fotos/3/f/d/a/3fda36c5316f62e27a9a5d3560309d6c.jpg',
+        'https://seattlerefined.com/resources/media2/16x9/full/1015/center/80/24b73c1f-cf92-4417-acfe-65a485bbef57-large16x9_537A5824.jpg'
+      ]),
+      news_summary: 'A banda Currents lançou o sombrio single *It Only Gets Darker*, seu primeiro trabalho inédito desde o álbum *The Death We Seek*, de 2023.',
+      source_link: 'https://rocksound.tv/news/currents-unveil-sombre-single-it-only-gets-darker?utm_source=chatgpt.com'
+    }
+    
+    // Verificar se já existe
+    const existing = await db.get('SELECT id FROM news WHERE band_name = ?', [currentsData.band_name])
+    
+    if (!existing) {
+      await db.run(
+        `INSERT INTO news (title, content, image, author, is_published, band_name, media_urls, news_summary, source_link) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          currentsData.title,
+          currentsData.content,
+          currentsData.image,
+          currentsData.author,
+          currentsData.is_published,
+          currentsData.band_name,
+          currentsData.media_urls,
+          currentsData.news_summary,
+          currentsData.source_link
+        ]
+      )
+      console.log('✅ Dados de exemplo para Currents inseridos')
+    } else {
+      console.log('ℹ️ Dados de exemplo para Currents já existem')
+    }
+    
+    console.log('✅ Migração concluída com sucesso')
     
   } catch (error) {
-    console.error('❌ Erro durante migrações:', error)
+    console.error('❌ Erro na migração:', error)
   } finally {
-    await db.close()
+    process.exit(0)
   }
 }
 
-// Executar migrações se o arquivo for chamado diretamente
-if (require.main === module) {
-  runMigrations()
-}
-
-module.exports = { runMigrations } 
+migrateNewsTable() 

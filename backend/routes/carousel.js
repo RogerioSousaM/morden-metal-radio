@@ -283,7 +283,7 @@ router.get('/stats', authenticateToken, async (req, res) => {
       total: carouselSlides.length,
       active: carouselSlides.filter(slide => slide.isActive).length,
       images: carouselSlides.filter(slide => slide.type === 'image').length,
-      videos: carouselSlides.filter(slide => slide.type === 'video').length
+      
     }
     
     res.json(stats)

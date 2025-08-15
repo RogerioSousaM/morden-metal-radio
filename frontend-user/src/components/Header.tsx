@@ -19,14 +19,14 @@ const Header = () => {
 
   const navItems = [
     { label: 'Programação', href: '#programacao' },
-    { label: 'Shows', href: '#shows' },
-    { label: 'Bandas em Destaque', href: '#bandas' },
+    { label: 'Filmaço', href: '#filmaço' },
+    { label: 'Destaques', href: '#destaques' },
   ]
 
   useEffect(() => {
     const loadSocialLinks = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/social-links')
+        const response = await fetch('/api/social-links')
         if (response.ok) {
           const data = await response.json()
           setSocialLinks(data)

@@ -189,7 +189,7 @@ const processVideo = async (req, res, next) => {
     return next()
   }
 
-  const mediaType = req.params.mediaType || 'videos'
+      const mediaType = req.params.mediaType || 'gallery'
   const config = getMediaConfig(mediaType)
   
   if (!config || !config.allowedTypes.some(type => type.startsWith('video/'))) {

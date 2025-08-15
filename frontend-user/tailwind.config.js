@@ -8,6 +8,7 @@ export default {
     extend: {
       colors: {
         'metal-dark': '#000000',
+        'metal-black': '#0b0b0b',
         'metal-card': '#121212',
         'metal-gray': '#1a1a1a',
         'metal-light-gray': '#2a2a2a',

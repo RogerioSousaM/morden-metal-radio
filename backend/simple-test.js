@@ -117,14 +117,13 @@ async function runTests() {
   // Teste 2: Upload de imagem para galeria
   const galleryImage = await testUpload('gallery', testImagePath, 'test-gallery-image.jpg')
 
-  // Teste 3: Upload de vídeo
-  const video = await testUpload('videos', testVideoPath, 'test-video.mp4')
+
 
   // Teste 4: Listagem de arquivos
   await testListFiles('all')
   await testListFiles('news')
   await testListFiles('gallery')
-  await testListFiles('videos')
+
 
   // Teste 5: Estatísticas
   await testStats()

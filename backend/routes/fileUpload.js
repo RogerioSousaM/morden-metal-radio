@@ -383,7 +383,7 @@ router.get('/stats',
           COUNT(*) as total_files,
           SUM(size) as total_size,
           COUNT(CASE WHEN mime_type LIKE 'image/%' THEN 1 END) as total_images,
-          COUNT(CASE WHEN mime_type LIKE 'video/%' THEN 1 END) as total_videos,
+  
           COUNT(CASE WHEN is_featured = 1 THEN 1 END) as featured_files
         FROM images
       `)
@@ -401,7 +401,7 @@ router.get('/stats',
           total_files: stats.total_files || 0,
           total_size: stats.total_size || 0,
           total_images: stats.total_images || 0,
-          total_videos: stats.total_videos || 0,
+  
           featured_files: stats.featured_files || 0
         },
         recent_files: recentFiles

@@ -20,7 +20,7 @@ const Footer = () => {
   useEffect(() => {
     const loadSocialLinks = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/social-links')
+        const response = await fetch('/api/social-links')
         if (response.ok) {
           const data = await response.json()
           setSocialLinks(data)

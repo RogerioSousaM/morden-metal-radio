@@ -2,15 +2,14 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useState, useEffect } from 'react'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
-import BandsManagement from './pages/BandsManagement'
 import ScheduleManagement from './pages/ScheduleManagement'
 import FileManagement from './pages/FileManagement'
-import NewsManagement from './pages/NewsManagement'
 import UsersManagement from './pages/UsersManagement'
 import CarouselManagement from './pages/CarouselManagement'
-import TopMonthManagement from './pages/TopMonthManagement'
 import SocialLinksManagement from './pages/SocialLinksManagement'
 import SettingsManagement from './pages/SettingsManagement'
+import FilmaçoManagement from './pages/FilmaçoManagement'
+import DestaquesManagement from './pages/DestaquesManagement'
 import AdminLayout from './components/AdminLayout'
 import ErrorBoundary from './components/ErrorBoundary'
 
@@ -81,16 +80,7 @@ function App() {
               } 
             />
             
-            <Route 
-              path="/admin/bands" 
-              element={
-                isAuthenticated ? 
-                  <AdminLayout onLogout={() => setIsAuthenticated(false)}>
-                    <BandsManagement />
-                  </AdminLayout> : 
-                  <Navigate to="/login" replace />
-              } 
-            />
+
             
             <Route 
               path="/admin/schedule" 
@@ -114,16 +104,7 @@ function App() {
               } 
             />
             
-            <Route 
-              path="/admin/news" 
-              element={
-                isAuthenticated ? 
-                  <AdminLayout onLogout={() => setIsAuthenticated(false)}>
-                    <NewsManagement />
-                  </AdminLayout> : 
-                  <Navigate to="/login" replace />
-              } 
-            />
+
             
             <Route 
               path="/admin/users" 
@@ -147,16 +128,7 @@ function App() {
               } 
             />
             
-            <Route 
-              path="/admin/top-month" 
-              element={
-                isAuthenticated ? 
-                  <AdminLayout onLogout={() => setIsAuthenticated(false)}>
-                    <TopMonthManagement />
-                  </AdminLayout> : 
-                  <Navigate to="/login" replace />
-              } 
-            />
+
             
             <Route 
               path="/admin/social-links" 
@@ -179,6 +151,30 @@ function App() {
                   <Navigate to="/login" replace />
               } 
             />
+            
+            <Route 
+              path="/admin/filmaço" 
+              element={
+                isAuthenticated ? 
+                  <AdminLayout onLogout={() => setIsAuthenticated(false)}>
+                    <FilmaçoManagement />
+                  </AdminLayout> : 
+                  <Navigate to="/login" replace />
+              } 
+            />
+            
+            <Route 
+              path="/admin/destaques" 
+              element={
+                isAuthenticated ? 
+                  <AdminLayout onLogout={() => setIsAuthenticated(false)}>
+                    <DestaquesManagement />
+                  </AdminLayout> : 
+                  <Navigate to="/login" replace />
+              } 
+            />
+            
+
             
             {/* Rota 404 */}
             <Route 

@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link, useLocation } from 'react-router-dom'
 import {
-  LayoutDashboard, Music, Calendar, FileText, Users, 
-  Image, TrendingUp, Share2, Settings, LogOut, Menu, X,
-  Home, Radio, Newspaper, FolderOpen
+  LayoutDashboard, Calendar, Users, 
+  Image, Share2, Settings, LogOut, Menu, X,
+  Radio, FolderOpen, Film
 } from 'lucide-react'
 
 interface AdminLayoutProps {
@@ -25,13 +25,12 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
 
   const navigation = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-    { name: 'Bandas', href: '/admin/bands', icon: Music },
     { name: 'Programação', href: '/admin/schedule', icon: Calendar },
     { name: 'Arquivos', href: '/admin/files', icon: FolderOpen },
-    { name: 'Notícias', href: '/admin/news', icon: Newspaper },
     { name: 'Usuários', href: '/admin/users', icon: Users },
     { name: 'Carrossel', href: '/admin/carousel', icon: Image },
-    { name: 'Top do Mês', href: '/admin/top-month', icon: TrendingUp },
+    { name: 'Filmaço', href: '/admin/filmaço', icon: Film },
+    { name: 'Destaques da Cena', href: '/admin/destaques', icon: Image },
     { name: 'Redes Sociais', href: '/admin/social-links', icon: Share2 },
     { name: 'Configurações', href: '/admin/settings', icon: Settings },
   ]

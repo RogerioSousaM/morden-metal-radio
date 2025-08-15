@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Upload, Image, Video, File, Trash2, Eye, Download, AlertCircle } from 'lucide-react'
+import { Image, Video, File, Trash2, Eye, Download, AlertCircle } from 'lucide-react'
 import FileUpload from '../components/FileUpload'
 import { apiService } from '../services/api'
 import PageLayout from '../components/PageLayout'
 import Card from '../components/ui/Card'
 import Modal from '../components/ui/Modal'
 import SearchFilters from '../components/ui/SearchFilters'
-import ActionButton from '../components/ui/ActionButton'
+
 
 interface FileItem {
   id: number
@@ -24,7 +24,7 @@ interface FileStats {
   total_files: number
   total_size: number
   total_images: number
-  total_videos: number
+
   featured_files: number
 }
 
@@ -36,7 +36,7 @@ const FileManagement: React.FC = () => {
   const [selectedMediaType, setSelectedMediaType] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
+
   const [showUpload, setShowUpload] = useState(false)
 
   // Carregar arquivos
@@ -45,7 +45,7 @@ const FileManagement: React.FC = () => {
       setLoading(true)
       const response = await apiService.getFiles(selectedMediaType, currentPage, 20)
       setFiles(response.files)
-      setTotalPages(response.pagination.pages)
+
       setError(null)
     } catch (error: any) {
       setError(error.message)
@@ -133,7 +133,7 @@ const FileManagement: React.FC = () => {
     { value: 'all', label: 'Todos os Tipos' },
     { value: 'news', label: 'Notícias' },
     { value: 'gallery', label: 'Galeria' },
-    { value: 'videos', label: 'Vídeos' },
+    
     { value: 'thumbnails', label: 'Thumbnails' }
   ]
 
@@ -208,19 +208,7 @@ const FileManagement: React.FC = () => {
             </div>
           </Card>
 
-          <Card delay={0.4} className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                <Video className="w-5 h-5 text-purple-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-metal-text">
-                  {stats.total_videos}
-                </p>
-                <p className="text-sm text-metal-text-secondary">Vídeos</p>
-              </div>
-            </div>
-          </Card>
+
 
           <Card delay={0.5} className="p-6">
             <div className="flex items-center gap-3">
@@ -350,7 +338,7 @@ const FileManagement: React.FC = () => {
           <div>
             <h3 className="text-md font-medium text-metal-text mb-2">Vídeos</h3>
             <FileUpload
-              mediaType="videos"
+              mediaType="gallery"
               onUploadSuccess={handleUploadSuccess}
               onUploadError={handleUploadError}
               maxFiles={3}

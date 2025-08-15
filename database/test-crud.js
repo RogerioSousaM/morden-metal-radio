@@ -74,7 +74,7 @@ async function testCRUD() {
       { name: 'programs', query: 'SELECT COUNT(*) as count FROM programs' },
       { name: 'news', query: 'SELECT COUNT(*) as count FROM news' },
       { name: 'images', query: 'SELECT COUNT(*) as count FROM images' },
-      { name: 'videos', query: 'SELECT COUNT(*) as count FROM videos' },
+    
       { name: 'stats', query: 'SELECT COUNT(*) as count FROM stats' }
     ]
     

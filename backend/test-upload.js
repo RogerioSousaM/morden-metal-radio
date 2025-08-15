@@ -100,7 +100,7 @@ async function testStats() {
       console.log(`   - Total de arquivos: ${result.stats.total_files}`)
       console.log(`   - Tamanho total: ${result.stats.total_size} bytes`)
       console.log(`   - Imagens: ${result.stats.total_images}`)
-      console.log(`   - Vídeos: ${result.stats.total_videos}`)
+  
       return result.stats
     } else {
       const error = await response.text()
@@ -199,14 +199,13 @@ async function runAllTests() {
   // Teste 2: Upload de imagem para galeria
   const galleryImage = await testUpload('gallery', testImagePath, 'test-gallery-image.jpg')
   
-  // Teste 3: Upload de vídeo
-  const video = await testUpload('videos', testVideoPath, 'test-video.mp4')
+
   
   // Teste 4: Listagem de arquivos
   await testListFiles('all')
   await testListFiles('news')
   await testListFiles('gallery')
-  await testListFiles('videos')
+
   
   // Teste 5: Estatísticas
   await testStats()
@@ -221,10 +220,7 @@ async function runAllTests() {
     await testDownloadFile(galleryImage.id)
   }
   
-  // Teste 8: Exclusão (se houver arquivo)
-  if (video) {
-    await testDeleteFile(video.id)
-  }
+
   
   // Limpar arquivos de teste
   console.log('\n🧹 Limpando arquivos de teste...')

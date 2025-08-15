@@ -39,19 +39,7 @@ class Database {
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )`,
 
-      // Tabela de bandas
-      `CREATE TABLE IF NOT EXISTS bands (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        genre TEXT NOT NULL,
-        description TEXT,
-        listeners TEXT DEFAULT '0',
-        rating REAL DEFAULT 0,
-        is_featured BOOLEAN DEFAULT 0,
-        image TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )`,
+
 
       // Tabela de programas
       `CREATE TABLE IF NOT EXISTS programs (
@@ -68,8 +56,8 @@ class Database {
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )`,
 
-      // Tabela de notícias
-      `CREATE TABLE IF NOT EXISTS news (
+      // Tabela de destaques
+      `CREATE TABLE IF NOT EXISTS highlights (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
         content TEXT NOT NULL,
@@ -92,15 +80,28 @@ class Database {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )`,
 
-      // Tabela de vídeos
-      `CREATE TABLE IF NOT EXISTS videos (
+      // Tabela de filmes
+      `CREATE TABLE IF NOT EXISTS filmes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        description TEXT,
-        url TEXT NOT NULL,
-        thumbnail TEXT,
-        duration INTEGER,
-        is_featured BOOLEAN DEFAULT 0,
+        titulo TEXT NOT NULL,
+        descricao TEXT NOT NULL,
+        ano INTEGER NOT NULL,
+        nota REAL NOT NULL,
+        imagem TEXT,
+        indicacao_do_mes BOOLEAN DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )`,
+
+      // Tabela de destaques da cena (MosaicGallery)
+      `CREATE TABLE IF NOT EXISTS destaques_cena (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        titulo TEXT NOT NULL,
+        descricao TEXT NOT NULL,
+        imagem TEXT,
+        link TEXT,
+        ordem INTEGER DEFAULT 0,
+        ativo BOOLEAN DEFAULT 1,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )`,
@@ -109,7 +110,6 @@ class Database {
       `CREATE TABLE IF NOT EXISTS stats (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         listeners INTEGER DEFAULT 0,
-        top_band TEXT,
         next_program TEXT,
         system_alerts INTEGER DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -137,20 +137,7 @@ class Database {
           ['admin', hashedPassword, 'admin']
         )
 
-        // Inserir banda de exemplo
-        await this.run(
-          `INSERT INTO bands (name, genre, description, listeners, rating, is_featured, image) 
-           VALUES (?, ?, ?, ?, ?, ?, ?)`,
-          [
-            'Sleep Token',
-            'Alternative Metal',
-            'Misturando metal progressivo com elementos eletrônicos e vocais únicos',
-            '15.2k',
-            4.8,
-            1,
-            'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop&crop=center'
-          ]
-        )
+
 
         // Inserir programa de exemplo
         await this.run(
@@ -170,10 +157,21 @@ class Database {
 
         // Inserir estatísticas iniciais
         await this.run(
-          `INSERT INTO stats (listeners, top_band, next_program, system_alerts) 
-           VALUES (?, ?, ?, ?)`,
-          [1234, 'Sleep Token', 'Wake Up Metal', 0]
+          `INSERT INTO stats (listeners, next_program, system_alerts) 
+           VALUES (?, ?, ?)`,
+          [1234, 'Wake Up Metal', 0]
         )
+
+        // Inserir dados de exemplo para filmes
+        await this.run(`
+          INSERT INTO filmes (titulo, descricao, ano, nota, imagem, indicacao_do_mes) VALUES
+          ('O Mal que Nos Habita', 'Uma família se muda para uma casa isolada e descobre que há algo sinistro habitando nas paredes. O filme explora temas de isolamento, paranoia e o medo do desconhecido.', 2023, 4.5, 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjZU1s3QYrU5tX8ih7wRVCbkiBAdl4_SKbaGAxKLzEEoCkjl0V_M-Lt9qljRPhSwXHM3DBoLqdl2EmHgbS3okz-MG4RDIGVE73BFNhDHFY06EJv31VW6UsqlbefctU9eRT7ZcAeOEloj4Mkd0KTpuJVPCQcV9ZgpUKVsSb7Yvucs1eAODJDq05R6cObyuE/s929/Mal.jpg', 1),
+          ('A Hora do Mal', 'Um grupo de amigos enfrenta uma entidade demoníaca que se alimenta de seus medos mais profundos. Uma jornada psicológica que testa os limites da sanidade humana.', 2022, 4.2, 'https://trilhadomedo.com/wp-content/uploads/2025/04/a-hora-do-mal-trailer-600x600.webp', 0),
+          ('Terrifier 2', 'Art the Clown retorna para aterrorizar uma nova vítima em uma noite de Halloween sangrenta. Gore extremo e terror psicológico em sua forma mais brutal.', 2022, 4.0, 'https://images.mubicdn.net/images/film/244717/cache-818278-1745500459/image-w1280.jpg?size=800x', 0),
+          ('Hereditário', 'Uma família é atormentada por uma presença demoníaca após a morte da avó matriarca. Um dos filmes de terror mais aclamados da década.', 2018, 4.8, 'https://m.media-amazon.com/images/M/MV5BNmZhMTU1YjAtYzZhZi00YzJhLWFhMjktY2I4OTMxOGVjMmRhXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg', 0),
+          ('Midsommar', 'Um casal viaja para um festival de verão na Suécia que se transforma em um pesadelo pagão. Terror folk horror com elementos de drama psicológico.', 2019, 4.3, 'https://m.media-amazon.com/images/M/MV5BMzQxNzQzOTQxM15BMl5BanBnXkFtZTgwMDQ2NTcwODM@._V1_FMjpg_UX1000_.jpg', 0),
+          ('The Witch', 'Uma família puritana do século XVII enfrenta forças sobrenaturais na floresta da Nova Inglaterra. Um filme de terror histórico meticulosamente pesquisado.', 2015, 4.6, 'https://m.media-amazon.com/images/M/MV5BMjA1NTc1NDg3Nl5BMl5BanBnXkFtZTgwNTc1MTQ2NzE@._V1_FMjpg_UX1000_.jpg', 0)
+        `)
 
         console.log('✅ Dados iniciais inseridos com sucesso')
       }

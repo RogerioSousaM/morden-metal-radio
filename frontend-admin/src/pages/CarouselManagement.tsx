@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { apiService, CarouselSlide } from '../services/api'
 import PageLayout from '../components/PageLayout'
+import Modal from '../components/ui/Modal'
 
 
 
@@ -35,6 +36,8 @@ const CarouselManagement = () => {
   })
   const [uploading, setUploading] = useState(false)
   const [previewUrl, setPreviewUrl] = useState('')
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const [previewSlide, setPreviewSlide] = useState<CarouselSlide | null>(null)
 
   // Carregar slides da API
   useEffect(() => {
@@ -178,6 +181,16 @@ const CarouselManagement = () => {
       setUploading(false)
     }
   }
+
+  const handlePreview = (slide: CarouselSlide) => {
+    setPreviewSlide(slide);
+    setIsPreviewOpen(true);
+  };
+
+  const closePreview = () => {
+    setIsPreviewOpen(false);
+    setPreviewSlide(null);
+  };
 
   if (loading) {
     return (
@@ -393,6 +406,16 @@ const CarouselManagement = () => {
                     whileTap={{ scale: 0.9 }}
                   >
                     <Trash2 className="w-4 h-4" />
+                  </motion.button>
+
+                  {/* Adicione o botão de preview na listagem de slides */}
+                  <motion.button
+                    onClick={() => handlePreview(slide)}
+                    className="bg-blue-500 text-white px-2 py-1 rounded ml-2"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Visualizar como usuário
                   </motion.button>
                 </div>
               </div>
@@ -635,8 +658,23 @@ const CarouselManagement = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Modal de preview */}
+      <Modal isOpen={isPreviewOpen} onClose={closePreview} title="Visualização do Usuário">
+        {previewSlide && (
+          <div className="flex flex-col items-center p-4">
+            {previewSlide.type === 'image' ? (
+              <img src={previewSlide.imageUrl} alt={previewSlide.title} className="w-32 h-32 rounded mb-4 object-cover" />
+            ) : (
+              <video src={previewSlide.videoUrl} controls className="w-32 h-32 rounded mb-4 object-cover" />
+            )}
+            <h2 className="text-xl font-bold mb-2">{previewSlide.title}</h2>
+            <span className="text-sm text-gray-500 mb-1">{previewSlide.description}</span>
+          </div>
+        )}
+      </Modal>
     </PageLayout>
   )
 }
 
-export default CarouselManagement 
+export default CarouselManagement
