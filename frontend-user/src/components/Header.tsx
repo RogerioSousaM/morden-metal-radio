@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Music, X } from 'lucide-react'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [announcement, setAnnouncement] = useState('')
+  const navigate = useNavigate()
+  const location = useLocation()
 
   // Detectar scroll para comportamento sticky
   useEffect(() => {
@@ -43,6 +46,17 @@ const Header: React.FC = () => {
     }
   }, [isMobileMenuOpen])
 
+  // Função para navegação
+  const handleNavigation = (route: string) => {
+    navigate(route)
+    handleNavClick()
+  }
+
+  // Verificar se a rota está ativa
+  const isActiveRoute = (route: string) => {
+    return location.pathname === route
+  }
+
   return (
     <>
       {/* Skip Links para acessibilidade */}
@@ -63,8 +77,8 @@ const Header: React.FC = () => {
       <header className={`header ${isScrolled ? 'scrolled backdrop-blur-sm bg-black/40 border-b border-metal-light-gray/14' : ''}`}>
         <div className="header-content">
           {/* Logo */}
-          <motion.a
-            href="/"
+          <motion.button
+            onClick={() => handleNavigation('/')}
             className="header-logo"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -72,22 +86,28 @@ const Header: React.FC = () => {
           >
             <Music className="header-logo-icon" />
             <span className="font-display">METALCORE</span>
-          </motion.a>
+          </motion.button>
 
           {/* Desktop Navigation */}
           <nav className="header-nav">
-            <a href="#bandas" className="header-nav-item active">
+            <button 
+              onClick={() => handleNavigation('/bandas')}
+              className={`header-nav-item ${isActiveRoute('/bandas') ? 'active' : ''}`}
+            >
               Bandas da Cena
-            </a>
-            <a href="#programas" className="header-nav-item">
+            </button>
+            <button 
+              onClick={() => handleNavigation('/programs')}
+              className={`header-nav-item ${isActiveRoute('/programs') ? 'active' : ''}`}
+            >
               Programas
-            </a>
-            <a href="#filmes" className="header-nav-item">
+            </button>
+            <button 
+              onClick={() => handleNavigation('/filmes')}
+              className={`header-nav-item ${isActiveRoute('/filmes') ? 'active' : ''}`}
+            >
               Filmaço
-            </a>
-            <a href="#noticias" className="header-nav-item">
-              Notícias
-            </a>
+            </button>
           </nav>
 
           {/* Header Actions */}
@@ -154,10 +174,13 @@ const Header: React.FC = () => {
             >
               {/* Menu Header */}
               <div className="mobile-menu-header">
-                <div className="header-logo">
+                <button 
+                  onClick={() => handleNavigation('/')}
+                  className="header-logo"
+                >
                   <Music className="header-logo-icon" />
                   <span>METALCORE</span>
-                </div>
+                </button>
                 <button
                   className="mobile-menu-close"
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -169,34 +192,24 @@ const Header: React.FC = () => {
 
               {/* Mobile Navigation */}
               <nav className="mobile-nav">
-                <a
-                  href="#bandas"
-                  className="mobile-nav-item active"
-                  onClick={handleNavClick}
+                <button
+                  onClick={() => handleNavigation('/bandas')}
+                  className={`mobile-nav-item ${isActiveRoute('/bandas') ? 'active' : ''}`}
                 >
                   🎸 Bandas da Cena
-                </a>
-                <a
-                  href="#programas"
-                  className="mobile-nav-item"
-                  onClick={handleNavClick}
+                </button>
+                <button
+                  onClick={() => handleNavigation('/programs')}
+                  className={`mobile-nav-item ${isActiveRoute('/programs') ? 'active' : ''}`}
                 >
                   📻 Programas
-                </a>
-                <a
-                  href="#filmes"
-                  className="mobile-nav-item"
-                  onClick={handleNavClick}
+                </button>
+                <button
+                  onClick={() => handleNavigation('/filmes')}
+                  className={`mobile-nav-item ${isActiveRoute('/filmes') ? 'active' : ''}`}
                 >
                   🎬 Filmaço
-                </a>
-                <a
-                  href="#noticias"
-                  className="mobile-nav-item"
-                  onClick={handleNavClick}
-                >
-                  📰 Notícias
-                </a>
+                </button>
               </nav>
 
               {/* Mobile CTA */}

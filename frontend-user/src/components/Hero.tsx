@@ -88,7 +88,7 @@ const Hero: React.FC = () => {
                 alt="Metalcore Show - Programa ao vivo"
                 className="hero-feature-image"
                 loading="eager"
-                fetchPriority="high"
+                                  fetchPriority="high"
                 width="600"
                 height="400"
               />

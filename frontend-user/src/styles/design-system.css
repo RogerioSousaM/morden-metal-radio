@@ -2768,3 +2768,45 @@ select:focus {
   color: var(--accent-crimson);
   /* Vermelho sobre fundo escuro - contraste > 4.5:1 */
 }
+
+/* ===== EXISTING UTILITIES ===== */
+
+/* ===== MOSAIC GALLERY SYSTEM ===== */
+
+/* Masonry Grid - Padrão consistente que elimina gaps */
+.masonry-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+/* Responsive breakpoints para o masonry grid */
+@media (max-width: 1023px) {
+  .masonry-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-3);
+    padding: var(--space-3);
+  }
+}
+
+@media (max-width: 767px) {
+  .masonry-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+    padding: var(--space-3);
+  }
+}
+
+@media (max-width: 479px) {
+  .masonry-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+    padding: var(--space-3);
+  }
+}
+
+/* Aspect ratio para cards consistentes */
+.aspect-\[4\/3\] {
+  aspect-ratio: 4/3;
+}

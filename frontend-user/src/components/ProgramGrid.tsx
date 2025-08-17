@@ -1,26 +1,20 @@
 import { motion } from 'framer-motion'
-import { Clock, Music, Users, Heart } from 'lucide-react'
+import { Clock, Music, Users, Heart, Play, Info, Calendar } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { apiService } from '../services/api'
-
-interface Program {
-  id: number
-  title: string
-  startTime: string
-  endTime: string
-  host: string
-  genre: string
-  description: string
-  isLive: boolean
-  listeners: string
-}
+import { apiService, Program } from '../services/api'
+import { useToast } from './ui/Toast'
 
 const ProgramGrid = () => {
   const [programs, setPrograms] = useState<Program[]>([])
+  const [loading, setLoading] = useState(true)
+  const [requestingProgram, setRequestingProgram] = useState<number | null>(null)
+  const [playingProgram, setPlayingProgram] = useState<number | null>(null)
+  const { showSuccess, showError, showInfo } = useToast()
 
   useEffect(() => {
     const loadPrograms = async () => {
       try {
+        setLoading(true)
         const apiPrograms = await apiService.getProgramasPublicos()
         setPrograms(apiPrograms)
       } catch (error) {
@@ -95,12 +89,100 @@ const ProgramGrid = () => {
           }
         ])
       } finally {
-        // setLoading(false) // Removed as per edit hint
+        setLoading(false)
       }
     }
 
     loadPrograms()
   }, [])
+
+  // Função para lidar com preferências de movimento reduzido
+  const shouldReduceMotion = () => {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  }
+
+  // Função para reproduzir programa
+  const handlePlayProgram = async (programId: number) => {
+    try {
+      setPlayingProgram(programId)
+      const success = await apiService.playProgram(programId)
+      
+      if (success) {
+        showSuccess('Programa iniciado', 'O programa está sendo reproduzido agora')
+      } else {
+        showError('Erro ao reproduzir', 'Não foi possível iniciar o programa')
+      }
+    } catch (error) {
+      showError('Erro ao reproduzir', 'Falha na conexão com o servidor')
+    } finally {
+      setPlayingProgram(null)
+    }
+  }
+
+  // Função para ver detalhes do programa
+  const handleProgramDetails = async (programId: number) => {
+    try {
+      const program = await apiService.getProgramDetails(programId)
+      if (program) {
+        // Navegar para página de detalhes ou mostrar modal
+        showInfo('Detalhes do programa', `${program.title} - ${program.description}`)
+      } else {
+        showError('Erro', 'Não foi possível carregar os detalhes do programa')
+      }
+    } catch (error) {
+      showError('Erro', 'Falha ao carregar detalhes do programa')
+    }
+  }
+
+  // Função para solicitar música
+  const handleRequestSong = async (programId: number) => {
+    try {
+      setRequestingProgram(programId)
+      
+      // Aqui você poderia abrir um modal para coletar informações da solicitação
+      const request = {
+        programId,
+        songName: 'Música solicitada pelo usuário',
+        artistName: 'Artista',
+        message: 'Solicitação via interface web',
+        contactEmail: 'user@example.com'
+      }
+      
+      const success = await apiService.requestProgramSong(request)
+      
+      if (success) {
+        showSuccess('Solicitação enviada', 'Sua música foi solicitada com sucesso!')
+      } else {
+        showError('Erro na solicitação', 'Não foi possível enviar sua solicitação')
+      }
+    } catch (error) {
+      showError('Erro na solicitação', 'Falha ao processar sua solicitação')
+    } finally {
+      setRequestingProgram(null)
+    }
+  }
+
+  // Estado de loading
+  if (loading) {
+    return (
+      <section id="programacao" className="py-16 px-4 sm:px-6 lg:px-8 bg-metal-gray/30">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-metal-text mb-4 tracking-widest uppercase">
+              Programação
+            </h2>
+            <p className="text-xl text-metal-text-secondary max-w-2xl mx-auto">
+              Confira nossa grade completa de 24 horas de metal ininterrupto
+            </p>
+          </div>
+          
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-crimson"></div>
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section id="programacao" className="py-16 px-4 sm:px-6 lg:px-8 bg-metal-gray/30">
@@ -129,9 +211,12 @@ const ProgramGrid = () => {
               className={`card card-compact group ${program.isLive ? 'live' : ''}`}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
+              transition={{ 
+                duration: shouldReduceMotion() ? 0 : 0.6, 
+                delay: shouldReduceMotion() ? 0 : index * 0.1 
+              }}
               viewport={{ once: true }}
-              whileHover={{ scale: 1.02 }}
+              whileHover={shouldReduceMotion() ? {} : { scale: 1.02 }}
             >
               {/* Live Indicator */}
               {program.isLive && (
@@ -145,14 +230,14 @@ const ProgramGrid = () => {
 
               {/* Time */}
               <div className="flex items-center gap-2 mb-2">
-                <Clock className="w-4 h-4 text-metal-orange" />
-                <span className="text-sm font-mono text-metal-orange">
+                <Clock className="w-4 h-4 text-accent-crimson" />
+                <span className="text-sm font-mono text-accent-crimson">
                   {program.startTime} - {program.endTime}
                 </span>
               </div>
 
               {/* Title */}
-              <h3 className="text-xl font-bold text-metal-text mb-2 group-hover:text-metal-orange transition-colors">
+              <h3 className="text-xl font-bold text-metal-text mb-2 group-hover:text-accent-crimson transition-colors">
                 {program.title}
               </h3>
 
@@ -165,36 +250,76 @@ const ProgramGrid = () => {
               <div className="flex items-center gap-2 mb-3">
                 <Users className="w-4 h-4 text-metal-text-secondary" />
                 <span className="text-sm text-metal-text-secondary">
-                  Apresentado por <span className="text-metal-orange font-medium">{program.host}</span>
+                  Apresentado por <span className="text-accent-crimson font-medium">{program.host}</span>
                 </span>
               </div>
 
               {/* Genre */}
               <div className="flex items-center gap-2 mb-4">
-                <Music className="w-4 h-4 text-metal-text-secondary tooltip" data-tooltip="Gênero musical" />
+                <Music className="w-4 h-4 text-metal-text-secondary" />
                 <span className="text-sm text-metal-text-secondary">
                   {program.genre}
                 </span>
               </div>
 
               {/* Listeners */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Heart className="w-4 h-4 text-metal-red tooltip" data-tooltip="Ouvintes ativos" />
-                  <span className="text-sm text-metal-text-secondary">
-                    {program.listeners} ouvintes
-                  </span>
-                </div>
-                
+              <div className="flex items-center gap-2 mb-4">
+                <Heart className="w-4 h-4 text-accent-crimson" />
+                <span className="text-sm text-metal-text-secondary">
+                  {program.listeners} ouvintes
+                </span>
+              </div>
+
+              {/* Action Buttons Container */}
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-auto">
+                {/* Play Button */}
                 <motion.button
-                  className="text-metal-orange hover:text-metal-accent transition-colors"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  aria-label="Ver detalhes do programa"
+                  className="inline-flex items-center justify-center px-3 py-2 rounded-md bg-accent-crimson text-white text-sm font-medium hover:bg-accent-crimson/90 transition-colors min-w-[80px] whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-accent-crimson focus:ring-offset-2 focus:ring-offset-metal-dark disabled:opacity-50 disabled:cursor-not-allowed"
+                  whileHover={shouldReduceMotion() ? {} : { scale: 1.05 }}
+                  whileTap={shouldReduceMotion() ? {} : { scale: 0.95 }}
+                  aria-label={`Ouvir programa ${program.title}`}
+                  onClick={() => handlePlayProgram(program.id)}
+                  disabled={playingProgram === program.id}
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+                  {playingProgram === program.id ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  ) : (
+                    <Play className="w-4 h-4 mr-1" />
+                  )}
+                  <span className="hidden sm:inline">
+                    {playingProgram === program.id ? 'Carregando...' : 'Ouvir'}
+                  </span>
+                </motion.button>
+
+                {/* Details Button */}
+                <motion.button
+                  className="inline-flex items-center justify-center px-3 py-2 rounded-md bg-transparent text-accent-crimson border border-accent-crimson text-sm font-medium hover:bg-accent-crimson/10 transition-colors min-w-[80px] whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-accent-crimson focus:ring-offset-2 focus:ring-offset-metal-dark"
+                  whileHover={shouldReduceMotion() ? {} : { scale: 1.05 }}
+                  whileTap={shouldReduceMotion() ? {} : { scale: 0.95 }}
+                  aria-label={`Ver detalhes do programa ${program.title}`}
+                  onClick={() => handleProgramDetails(program.id)}
+                >
+                  <Info className="w-4 h-4 mr-1" />
+                  <span className="hidden sm:inline">Detalhes</span>
+                </motion.button>
+
+                {/* Request Button */}
+                <motion.button
+                  className="inline-flex items-center justify-center px-3 py-2 rounded-md bg-transparent text-accent-amber border border-accent-amber text-sm font-medium hover:bg-accent-amber/10 transition-colors min-w-[80px] whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-accent-amber focus:ring-offset-2 focus:ring-offset-metal-dark disabled:opacity-50 disabled:cursor-not-allowed"
+                  whileHover={shouldReduceMotion() ? {} : { scale: 1.05 }}
+                  whileTap={shouldReduceMotion() ? {} : { scale: 0.95 }}
+                  aria-label={`Solicitar música para o programa ${program.title}`}
+                  onClick={() => handleRequestSong(program.id)}
+                  disabled={requestingProgram === program.id}
+                >
+                  {requestingProgram === program.id ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-accent-amber"></div>
+                  ) : (
+                    <Calendar className="w-4 h-4 mr-1" />
+                  )}
+                  <span className="hidden sm:inline">
+                    {requestingProgram === program.id ? 'Enviando...' : 'Solicitar'}
+                  </span>
                 </motion.button>
               </div>
             </motion.div>
@@ -211,11 +336,11 @@ const ProgramGrid = () => {
         >
           <motion.button 
             className="btn-secondary flex items-center gap-3 mx-auto"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={shouldReduceMotion() ? {} : { scale: 1.05 }}
+            whileTap={shouldReduceMotion() ? {} : { scale: 0.95 }}
           >
             <Music className="w-5 h-5" />
-            View Full Schedule
+            Ver Grade Completa
           </motion.button>
         </motion.div>
       </div>

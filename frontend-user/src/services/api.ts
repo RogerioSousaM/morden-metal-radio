@@ -76,6 +76,26 @@ interface Band {
   updated_at: string
 }
 
+interface Program {
+  id: number
+  title: string
+  startTime: string
+  endTime: string
+  host: string
+  genre: string
+  description: string
+  isLive: boolean
+  listeners: string
+}
+
+interface ProgramRequest {
+  programId: number
+  songName?: string
+  artistName?: string
+  message?: string
+  contactEmail?: string
+}
+
 class ApiService {
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`
@@ -90,7 +110,8 @@ class ApiService {
       })
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
 
       return await response.json()
@@ -99,6 +120,8 @@ class ApiService {
       throw error
     }
   }
+
+  // ===== MÉTODOS EXISTENTES =====
 
   // Buscar banners por localização
   async getBanners(location: string, limit: number = 1): Promise<Banner[]> {
@@ -220,9 +243,9 @@ class ApiService {
   }
 
   // Buscar programas públicos
-  async getProgramasPublicos(): Promise<any[]> {
+  async getProgramasPublicos(): Promise<Program[]> {
     try {
-      const response = await this.request<any[]>('/programs/public')
+      const response = await this.request<Program[]>('/programs/public')
       return response || []
     } catch (error) {
       console.error('Erro ao buscar programas públicos:', error)
@@ -254,7 +277,7 @@ class ApiService {
       const response = await this.request<any>('/stats')
       return response
     } catch (error) {
-      console.error('Erro ao buscar estatísticas:', error)
+      console.error('Erro ao buscar estatísticas públicas:', error)
       return {
         listeners: 0,
         nextProgram: 'N/A',
@@ -285,6 +308,107 @@ class ApiService {
       return []
     }
   }
+
+  // ===== NOVOS MÉTODOS PARA AÇÕES DOS BOTÕES =====
+
+  // Registrar clique em banner
+  async registerBannerClick(bannerId: number): Promise<boolean> {
+    try {
+      await this.request(`/banners/${bannerId}/click`, {
+        method: 'POST'
+      })
+      return true
+    } catch (error) {
+      console.error('Erro ao registrar clique no banner:', error)
+      return false
+    }
+  }
+
+  // Favoritar/desfavoritar filme
+  async toggleFilmeFavorite(filmeId: number): Promise<boolean> {
+    try {
+      const response = await this.request<{ isFavorite: boolean }>(`/filmes/${filmeId}/favorite`, {
+        method: 'POST'
+      })
+      return response.isFavorite
+    } catch (error) {
+      console.error('Erro ao favoritar filme:', error)
+      throw error
+    }
+  }
+
+  // Solicitar música para programa
+  async requestProgramSong(request: ProgramRequest): Promise<boolean> {
+    try {
+      await this.request('/programs/request', {
+        method: 'POST',
+        body: JSON.stringify(request)
+      })
+      return true
+    } catch (error) {
+      console.error('Erro ao solicitar música:', error)
+      throw error
+    }
+  }
+
+  // Buscar detalhes de um filme específico
+  async getFilmeDetails(filmeId: number): Promise<Filme | null> {
+    try {
+      const response = await this.request<Filme>(`/filmes/${filmeId}`)
+      return response
+    } catch (error) {
+      console.error('Erro ao buscar detalhes do filme:', error)
+      return null
+    }
+  }
+
+  // Buscar detalhes de uma banda específica
+  async getBandDetails(bandId: number): Promise<Band | null> {
+    try {
+      const response = await this.request<Band>(`/bandas/${bandId}`)
+      return response
+    } catch (error) {
+      console.error('Erro ao buscar detalhes da banda:', error)
+      return null
+    }
+  }
+
+  // Buscar detalhes de um programa específico
+  async getProgramDetails(programId: number): Promise<Program | null> {
+    try {
+      const response = await this.request<Program>(`/programs/${programId}`)
+      return response
+    } catch (error) {
+      console.error('Erro ao buscar detalhes do programa:', error)
+      return null
+    }
+  }
+
+  // Reproduzir música da banda
+  async playBandMusic(bandId: number): Promise<boolean> {
+    try {
+      await this.request(`/bands/${bandId}/play`, {
+        method: 'POST'
+      })
+      return true
+    } catch (error) {
+      console.error('Erro ao reproduzir música da banda:', error)
+      return false
+    }
+  }
+
+  // Reproduzir programa
+  async playProgram(programId: number): Promise<boolean> {
+    try {
+      await this.request(`/programs/${programId}/play`, {
+        method: 'POST'
+      })
+      return true
+    } catch (error) {
+      console.error('Erro ao reproduzir programa:', error)
+      return false
+    }
+  }
 }
 
 export const apiService = new ApiService()
@@ -295,5 +419,7 @@ export type {
   Filme, 
   Destaque, 
   ApiResponse,
-  Band
+  Band,
+  Program,
+  ProgramRequest
 }
