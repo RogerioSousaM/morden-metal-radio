@@ -97,6 +97,35 @@ router.post('/', authenticateToken, async (req, res) => {
     
     const { titulo, descricao, imagem, link, ordem, ativo } = req.body;
     
+    // Validar URL da imagem se fornecida
+    if (imagem && imagem.trim() !== '') {
+      try {
+        // Verificar se é HTTPS
+        if (!imagem.startsWith('https://')) {
+          return res.status(400).json({ error: 'URL da imagem deve usar HTTPS' })
+        }
+        
+        // Verificar se não é data URI (segurança)
+        if (imagem.startsWith('data:')) {
+          return res.status(400).json({ error: 'Data URIs não são permitidos por segurança' })
+        }
+        
+        // Verificar se a imagem existe (HEAD request)
+        const response = await fetch(imagem, { method: 'HEAD' })
+        if (!response.ok) {
+          return res.status(400).json({ error: 'Imagem não encontrada ou inacessível' })
+        }
+        
+        // Verificar Content-Type
+        const contentType = response.headers.get('content-type')
+        if (!contentType || !contentType.startsWith('image/')) {
+          return res.status(400).json({ error: 'URL não aponta para uma imagem válida' })
+        }
+      } catch (error) {
+        return res.status(400).json({ error: 'Erro ao validar URL da imagem' })
+      }
+    }
+    
     if (!titulo || !descricao) {
       return res.status(400).json({ error: 'Título e descrição são obrigatórios' });
     }

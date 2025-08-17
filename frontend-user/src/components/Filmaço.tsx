@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Play, Calendar, Star, ExternalLink } from 'lucide-react'
+import { apiService } from '../services/api'
 
 interface Movie {
   id: number
@@ -20,10 +21,9 @@ const Filmaço = () => {
   useEffect(() => {
     const fetchMovies = async () => {
       try {
-        const response = await fetch('/api/filmes')
-        const data = await response.json()
+        const filmes = await apiService.getFilmes()
         // Garante que indicacao_do_mes é booleano
-        const filmesCorrigidos = (data.filmes || []).map((filme: any) => ({
+        const filmesCorrigidos = filmes.map((filme: any) => ({
           ...filme,
           indicacao_do_mes: Boolean(filme.indicacao_do_mes)
         }))
@@ -137,11 +137,14 @@ const Filmaço = () => {
                   ) : null}
 
                   {/* Imagem do filme */}
-                  <div className="relative overflow-hidden">
+                  <div className="relative overflow-hidden aspect-[4/3]">
                     <motion.img
                       src={movie.imagem || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDMyMCAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iMTkyIiBmaWxsPSIjM2E0YTVhIi8+CjxwYXRoIGQ9Ik0xNjAgOTZDMjEwLjUgOTYgMjUyIDEzNy41IDI1MiAxODhIMTYwQzEwOS41IDE4OCA2OCAxNDYuNSA2OCA5NkM2OCA0NS41IDEwOS41IDQgMTYwIDRaIiBmaWxsPSIjNjc3M2E0Ii8+CjxwYXRoIGQ9Ik0xNjAgMTQ0QzE3Ni41NjkgMTQ0IDE5MCAxMzAuNTY5IDE5MCAxMTRDMTkwIDk3LjQzMTUgMTc2LjU2OSA4NCAxNjAgODRDMTQzLjQzMSA4NCAxMzAgOTcuNDMxNSAxMzAgMTE0QzEzMCAxMzAuNTY5IDE0My40MzEgMTQ0IDE2MCAxNDRaIiBmaWxsPSIjNjc3M2E0Ii8+CjxwYXRoIGQ9Ik0xNjAgMTY4QzE3Ni41NjkgMTY4IDE5MCAxNTQuNTY5IDE5MCAxMzhDMTkwIDEyMS40MzEgMTc2LjU2OSAxMDggMTYwIDEwOEMxNDMuNDMxIDEwOCAxMzAgMTIxLjQzMSAxMzAgMTM4QzEzMCAxNTQuNTY5IDE0My40MzEgMTY4IDE2MCAxNjhaIiBmaWxsPSIjNjc3M2E0Ii8+Cjwvc3ZnPgo='}
                       alt={movie.titulo}
-                      className="w-full h-48 object-cover rounded-t-lg transition-transform duration-500 group-hover:scale-110"
+                      className="w-full h-full object-cover rounded-t-lg transition-transform duration-500 group-hover:scale-110"
+                      loading="lazy"
+                      width="320"
+                      height="240"
                       onError={(e) => {
                         // Fallback para imagem de erro
                         e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDMyMCAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iMTkyIiBmaWxsPSIjM2E0YTVhIi8+CjxwYXRoIGQ9Ik0xNjAgOTZDMjEwLjUgOTYgMjUyIDEzNy41IDI1MiAxODhIMTYwQzEwOS41IDE4OCA2OCAxNDYuNSA2OCA5NkM2OCA0NS41IDEwOS41IDQgMTYwIDRaIiBmaWxsPSIjNjc3M2E0Ii8+CjxwYXRoIGQ9Ik0xNjAgMTQ0QzE3Ni41NjkgMTQ0IDE5MCAxMzAuNTY5IDE5MCAxMTRDMTkwIDk3LjQzMTUgMTc2LjU2OSA4NCAxNjAgODRDMTQzLjQzMSA4NCAxMzAgOTcuNDMxNSAxMzAgMTE0QzEzMCAxMzAuNTY5IDE0My40MzEgMTQ0IDE2MCAxNDRaIiBmaWxsPSIjNjc3M2E0Ii8+CjxwYXRoIGQ9Ik0xNjAgMTY4QzE3Ni41NjkgMTY4IDE5MCAxNTQuNTY5IDE5MCAxMzhDMTkwIDEyMS40MzEgMTc2LjU2OSAxMDggMTYwIDEwOEMxNDMuNDMxIDEwOCAxMzAgMTIxLjQzMSAxMzAgMTM4QzEzMCAxNTQuNTY5IDE0My40MzEgMTY4IDE2MCAxNjhaIiBmaWxsPSIjNjc3M2E0Ii8+Cjwvc3ZnPgo='
@@ -154,6 +157,7 @@ const Filmaço = () => {
                         className="bg-black/70 hover:bg-metal-orange/80 text-white p-2 rounded-full transition-colors duration-200"
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.95 }}
+                        aria-label={`Assistir ${movie.titulo}`}
                       >
                         <Play className="w-4 h-4 ml-0.5" />
                       </motion.button>
@@ -188,9 +192,10 @@ const Filmaço = () => {
                       className="btn-secondary w-full mt-4 flex items-center justify-center gap-2 group-hover:bg-metal-orange/10 group-hover:border-metal-orange/50"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
+                      aria-label={`Ver detalhes de ${movie.titulo}`}
                     >
-                      <ExternalLink className="w-4 h-4" />
-                      Ver Detalhes
+                                        <ExternalLink className="w-4 h-4" />
+                  View Details
                     </motion.button>
                   </div>
                 </div>
@@ -212,7 +217,7 @@ const Filmaço = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            Ver Mais Filmes de Terror
+            View More Horror Films
           </motion.button>
         </motion.div>
       </div>

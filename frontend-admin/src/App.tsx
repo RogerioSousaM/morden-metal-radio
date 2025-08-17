@@ -8,8 +8,10 @@ import UsersManagement from './pages/UsersManagement'
 import CarouselManagement from './pages/CarouselManagement'
 import SocialLinksManagement from './pages/SocialLinksManagement'
 import SettingsManagement from './pages/SettingsManagement'
-import FilmaçoManagement from './pages/FilmaçoManagement'
-import DestaquesManagement from './pages/DestaquesManagement'
+import FilmesManagement from './pages/FilmesManagement'
+
+import BannerManagement from './pages/BannerManagement'
+import BandasManagement from './pages/BandasManagement'
 import AdminLayout from './components/AdminLayout'
 import ErrorBoundary from './components/ErrorBoundary'
 
@@ -153,22 +155,35 @@ function App() {
             />
             
             <Route 
-              path="/admin/filmaço" 
+              path="/admin/filmes" 
               element={
                 isAuthenticated ? 
                   <AdminLayout onLogout={() => setIsAuthenticated(false)}>
-                    <FilmaçoManagement />
+                    <FilmesManagement />
                   </AdminLayout> : 
                   <Navigate to="/login" replace />
               } 
             />
             
+
+            
             <Route 
-              path="/admin/destaques" 
+              path="/admin/banners" 
               element={
                 isAuthenticated ? 
                   <AdminLayout onLogout={() => setIsAuthenticated(false)}>
-                    <DestaquesManagement />
+                    <BannerManagement />
+                  </AdminLayout> : 
+                  <Navigate to="/login" replace />
+              } 
+            />
+
+            <Route 
+              path="/admin/bandas" 
+              element={
+                isAuthenticated ? 
+                  <AdminLayout onLogout={() => setIsAuthenticated(false)}>
+                    <BandasManagement />
                   </AdminLayout> : 
                   <Navigate to="/login" replace />
               } 

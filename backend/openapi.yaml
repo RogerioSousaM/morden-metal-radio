@@ -1,0 +1,1224 @@
+openapi: 3.0.3
+info:
+  title: Morden Metal Radio API
+  description: API para gerenciamento de rádio online de metal moderno
+  version: 1.0.0
+  contact:
+    name: Morden Metal Team
+    email: dev@mordenmetal.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3001/api
+    description: Servidor de desenvolvimento
+  - url: https://api.mordenmetal.com/api
+    description: Servidor de produção
+
+tags:
+  - name: Autenticação
+    description: Endpoints para login e gerenciamento de sessão
+  - name: Filmes
+    description: Gerenciamento de filmes e indicações do mês
+  - name: Bandas
+    description: Gerenciamento de bandas da cena metal
+  - name: Banners
+    description: Gerenciamento de banners promocionais
+  - name: Destaques
+    description: Gerenciamento de conteúdo em destaque
+  - name: Carrossel
+    description: Gerenciamento do carrossel principal
+  - name: Links Sociais
+    description: Gerenciamento de links para redes sociais
+
+paths:
+  # ===== AUTENTICAÇÃO =====
+  /auth/login:
+    post:
+      tags:
+        - Autenticação
+      summary: Login de usuário
+      description: Autentica um usuário e retorna um token JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  description: Nome de usuário
+                  example: "admin"
+                password:
+                  type: string
+                  description: Senha do usuário
+                  example: "admin123"
+      responses:
+        '200':
+          description: Login realizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Token JWT para autenticação
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      username:
+                        type: string
+                        example: "admin"
+                      role:
+                        type: string
+                        example: "admin"
+        '401':
+          description: Credenciais inválidas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Credenciais inválidas"
+        '500':
+          description: Erro interno do servidor
+
+  # ===== FILMES =====
+  /filmes:
+    get:
+      tags:
+        - Filmes
+      summary: Listar filmes
+      description: Retorna lista paginada de filmes
+      parameters:
+        - name: page
+          in: query
+          description: Número da página
+          required: false
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          description: Quantidade de filmes por página
+          required: false
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+        - name: featured
+          in: query
+          description: Filtrar por filmes em destaque
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Lista de filmes retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Filme'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '500':
+          description: Erro interno do servidor
+
+    post:
+      tags:
+        - Filmes
+      summary: Criar novo filme
+      description: Cria um novo filme no sistema
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilmeCreate'
+      responses:
+        '201':
+          description: Filme criado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Filme'
+        '400':
+          description: Dados inválidos
+        '401':
+          description: Não autorizado
+        '500':
+          description: Erro interno do servidor
+
+  /filmes/{id}:
+    get:
+      tags:
+        - Filmes
+      summary: Buscar filme por ID
+      description: Retorna detalhes de um filme específico
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do filme
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Filme encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Filme'
+        '404':
+          description: Filme não encontrado
+        '500':
+          description: Erro interno do servidor
+
+    put:
+      tags:
+        - Filmes
+      summary: Atualizar filme
+      description: Atualiza um filme existente
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do filme
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilmeUpdate'
+      responses:
+        '200':
+          description: Filme atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Filme'
+        '400':
+          description: Dados inválidos
+        '401':
+          description: Não autorizado
+        '404':
+          description: Filme não encontrado
+        '500':
+          description: Erro interno do servidor
+
+    delete:
+      tags:
+        - Filmes
+      summary: Excluir filme
+      description: Remove um filme do sistema
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do filme
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Filme excluído com sucesso
+        '401':
+          description: Não autorizado
+        '404':
+          description: Filme não encontrado
+        '500':
+          description: Erro interno do servidor
+
+  # ===== BANDAS =====
+  /bandas:
+    get:
+      tags:
+        - Bandas
+      summary: Listar bandas
+      description: Retorna lista paginada de bandas
+      parameters:
+        - name: page
+          in: query
+          description: Número da página
+          required: false
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          description: Quantidade de bandas por página
+          required: false
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+        - name: featured
+          in: query
+          description: Filtrar por bandas em destaque
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Lista de bandas retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Banda'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '500':
+          description: Erro interno do servidor
+
+    post:
+      tags:
+        - Bandas
+      summary: Criar nova banda
+      description: Cria uma nova banda no sistema
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BandaCreate'
+      responses:
+        '201':
+          description: Banda criada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Banda'
+        '400':
+          description: Dados inválidos
+        '401':
+          description: Não autorizado
+        '500':
+          description: Erro interno do servidor
+
+  /bandas/{id}:
+    get:
+      tags:
+        - Bandas
+      summary: Buscar banda por ID
+      description: Retorna detalhes de uma banda específica
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID da banda
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Banda encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Banda'
+        '404':
+          description: Banda não encontrada
+        '500':
+          description: Erro interno do servidor
+
+    put:
+      tags:
+        - Bandas
+      summary: Atualizar banda
+      description: Atualiza uma banda existente
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID da banda
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BandaUpdate'
+      responses:
+        '200':
+          description: Banda atualizada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Banda'
+        '400':
+          description: Dados inválidos
+        '401':
+          description: Não autorizado
+        '404':
+          description: Banda não encontrada
+        '500':
+          description: Erro interno do servidor
+
+    delete:
+      tags:
+        - Bandas
+      summary: Excluir banda
+      description: Remove uma banda do sistema
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID da banda
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Banda excluída com sucesso
+        '401':
+          description: Não autorizado
+        '404':
+          description: Banda não encontrada
+        '500':
+          description: Erro interno do servidor
+
+  # ===== BANNERS =====
+  /banners:
+    get:
+      tags:
+        - Banners
+      summary: Listar banners
+      description: Retorna banners por localização (público) ou todos (admin)
+      parameters:
+        - name: location
+          in: query
+          description: Localização do banner (ex: hero, sidebar)
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Quantidade de banners a retornar
+          required: false
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+            maximum: 10
+        - name: active
+          in: query
+          description: Filtrar por banners ativos
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Lista de banners retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Banner'
+                  total:
+                    type: integer
+                  location:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '401':
+          description: Não autorizado (quando não há location)
+        '500':
+          description: Erro interno do servidor
+
+    post:
+      tags:
+        - Banners
+      summary: Criar novo banner
+      description: Cria um novo banner no sistema
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BannerCreate'
+      responses:
+        '201':
+          description: Banner criado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Banner'
+        '400':
+          description: Dados inválidos
+        '401':
+          description: Não autorizado
+        '500':
+          description: Erro interno do servidor
+
+  /banners/{id}:
+    get:
+      tags:
+        - Banners
+      summary: Buscar banner por ID
+      description: Retorna detalhes de um banner específico
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do banner
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Banner encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Banner'
+        '404':
+          description: Banner não encontrado
+        '500':
+          description: Erro interno do servidor
+
+    put:
+      tags:
+        - Banners
+      summary: Atualizar banner
+      description: Atualiza um banner existente
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do banner
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BannerUpdate'
+      responses:
+        '200':
+          description: Banner atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Banner'
+        '400':
+          description: Dados inválidos
+        '401':
+          description: Não autorizado
+        '404':
+          description: Banner não encontrado
+        '500':
+          description: Erro interno do servidor
+
+    delete:
+      tags:
+        - Banners
+      summary: Excluir banner
+      description: Remove um banner do sistema
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do banner
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Banner excluído com sucesso
+        '401':
+          description: Não autorizado
+        '404':
+          description: Banner não encontrado
+        '500':
+          description: Erro interno do servidor
+
+  # ===== DESTAQUES =====
+  /destaques:
+    get:
+      tags:
+        - Destaques
+      summary: Listar destaques
+      description: Retorna lista de conteúdo em destaque
+      parameters:
+        - name: type
+          in: query
+          description: Tipo de destaque (filme, banda, evento)
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Quantidade de destaques a retornar
+          required: false
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 50
+      responses:
+        '200':
+          description: Lista de destaques retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Destaque'
+                  total:
+                    type: integer
+        '500':
+          description: Erro interno do servidor
+
+  # ===== CARROSSEL =====
+  /carousel/active:
+    get:
+      tags:
+        - Carrossel
+      summary: Listar slides ativos
+      description: Retorna slides ativos do carrossel principal
+      responses:
+        '200':
+          description: Lista de slides retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CarouselSlide'
+        '500':
+          description: Erro interno do servidor
+
+  # ===== LINKS SOCIAIS =====
+  /social-links:
+    get:
+      tags:
+        - Links Sociais
+      summary: Obter links sociais
+      description: Retorna links para redes sociais
+      responses:
+        '200':
+          description: Links sociais retornados com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SocialLinks'
+        '500':
+          description: Erro interno do servidor
+
+    put:
+      tags:
+        - Links Sociais
+      summary: Atualizar links sociais
+      description: Atualiza links para redes sociais
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SocialLinks'
+      responses:
+        '200':
+          description: Links sociais atualizados com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SocialLinks'
+        '400':
+          description: Dados inválidos
+        '401':
+          description: Não autorizado
+        '500':
+          description: Erro interno do servidor
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token JWT obtido no login
+
+  schemas:
+    # ===== FILME =====
+    Filme:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID único do filme
+          example: 1
+        titulo:
+          type: string
+          description: Título do filme
+          example: "Mad Max: Fury Road"
+        descricao:
+          type: string
+          description: Descrição do filme
+          example: "Um filme de ação pós-apocalíptico..."
+        ano:
+          type: integer
+          description: Ano de lançamento
+          example: 2015
+        nota:
+          type: number
+          format: float
+          description: Nota do filme (0-5)
+          example: 4.5
+        imagem:
+          type: string
+          nullable: true
+          description: URL da imagem do filme
+          example: "https://example.com/madmax.jpg"
+        indicacao_do_mes:
+          type: boolean
+          description: Se o filme é indicação do mês
+          example: true
+        created_at:
+          type: string
+          format: date-time
+          description: Data de criação
+        updated_at:
+          type: string
+          format: date-time
+          description: Data da última atualização
+      required:
+        - id
+        - titulo
+        - descricao
+        - ano
+        - nota
+
+    FilmeCreate:
+      type: object
+      properties:
+        titulo:
+          type: string
+          description: Título do filme
+          example: "Mad Max: Fury Road"
+        descricao:
+          type: string
+          description: Descrição do filme
+          example: "Um filme de ação pós-apocalíptico..."
+        ano:
+          type: integer
+          description: Ano de lançamento
+          example: 2015
+        nota:
+          type: number
+          format: float
+          description: Nota do filme (0-5)
+          example: 4.5
+        imagem:
+          type: string
+          nullable: true
+          description: URL da imagem do filme
+          example: "https://example.com/madmax.jpg"
+        indicacao_do_mes:
+          type: boolean
+          description: Se o filme é indicação do mês
+          example: true
+      required:
+        - titulo
+        - descricao
+        - ano
+        - nota
+
+    FilmeUpdate:
+      type: object
+      properties:
+        titulo:
+          type: string
+          description: Título do filme
+        descricao:
+          type: string
+          description: Descrição do filme
+        ano:
+          type: integer
+          description: Ano de lançamento
+        nota:
+          type: number
+          format: float
+          description: Nota do filme (0-5)
+        imagem:
+          type: string
+          nullable: true
+          description: URL da imagem do filme
+        indicacao_do_mes:
+          type: boolean
+          description: Se o filme é indicação do mês
+
+    # ===== BANDA =====
+    Banda:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID único da banda
+          example: 1
+        name:
+          type: string
+          description: Nome da banda
+          example: "Sleep Token"
+        slug:
+          type: string
+          description: Slug da banda para URLs
+          example: "sleep-token"
+        description:
+          type: string
+          description: Descrição da banda
+          example: "Banda de metal alternativo..."
+        official_url:
+          type: string
+          nullable: true
+          description: URL oficial da banda
+          example: "https://sleeptoken.com"
+        image_url:
+          type: string
+          nullable: true
+          description: URL da imagem da banda
+          example: "https://example.com/sleeptoken.jpg"
+        genre_tags:
+          type: string
+          description: Tags de gênero em formato JSON
+          example: '["metal alternativo", "metalcore"]'
+        featured:
+          type: boolean
+          description: Se a banda está em destaque
+          example: true
+        created_at:
+          type: string
+          format: date-time
+          description: Data de criação
+        updated_at:
+          type: string
+          format: date-time
+          description: Data da última atualização
+      required:
+        - id
+        - name
+        - slug
+
+    BandaCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Nome da banda
+          example: "Sleep Token"
+        slug:
+          type: string
+          description: Slug da banda para URLs
+          example: "sleep-token"
+        description:
+          type: string
+          description: Descrição da banda
+          example: "Banda de metal alternativo..."
+        official_url:
+          type: string
+          nullable: true
+          description: URL oficial da banda
+          example: "https://sleeptoken.com"
+        image_url:
+          type: string
+          nullable: true
+          description: URL da imagem da banda
+          example: "https://example.com/sleeptoken.jpg"
+        genre_tags:
+          type: string
+          description: Tags de gênero em formato JSON
+          example: '["metal alternativo", "metalcore"]'
+        featured:
+          type: boolean
+          description: Se a banda está em destaque
+          example: true
+      required:
+        - name
+        - slug
+
+    BandaUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Nome da banda
+        slug:
+          type: string
+          description: Slug da banda para URLs
+        description:
+          type: string
+          description: Descrição da banda
+        official_url:
+          type: string
+          nullable: true
+          description: URL oficial da banda
+        image_url:
+          type: string
+          nullable: true
+          description: URL da imagem da banda
+        genre_tags:
+          type: string
+          description: Tags de gênero em formato JSON
+        featured:
+          type: boolean
+          description: Se a banda está em destaque
+
+    # ===== BANNER =====
+    Banner:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID único do banner
+          example: 1
+        title:
+          type: string
+          description: Título do banner
+          example: "Novo Álbum"
+        description:
+          type: string
+          nullable: true
+          description: Descrição do banner
+          example: "Confira o novo álbum da banda"
+        image_url:
+          type: string
+          description: URL da imagem do banner
+          example: "https://example.com/banner.jpg"
+        target_url:
+          type: string
+          nullable: true
+          description: URL de destino do banner
+          example: "https://example.com/album"
+        location:
+          type: string
+          description: Localização do banner
+          example: "hero"
+        priority:
+          type: integer
+          description: Prioridade de exibição
+          example: 1
+        active:
+          type: boolean
+          description: Se o banner está ativo
+          example: true
+        start_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Data de início da exibição
+        end_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Data de fim da exibição
+        impressions:
+          type: integer
+          description: Número de impressões
+          example: 150
+        created_at:
+          type: string
+          format: date-time
+          description: Data de criação
+        updated_at:
+          type: string
+          format: date-time
+          description: Data da última atualização
+      required:
+        - id
+        - title
+        - image_url
+        - location
+        - priority
+        - active
+
+    BannerCreate:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Título do banner
+          example: "Novo Álbum"
+        description:
+          type: string
+          nullable: true
+          description: Descrição do banner
+          example: "Confira o novo álbum da banda"
+        image_url:
+          type: string
+          description: URL da imagem do banner
+          example: "https://example.com/banner.jpg"
+        target_url:
+          type: string
+          nullable: true
+          description: URL de destino do banner
+          example: "https://example.com/album"
+        location:
+          type: string
+          description: Localização do banner
+          example: "hero"
+        priority:
+          type: integer
+          description: Prioridade de exibição
+          example: 1
+        active:
+          type: boolean
+          description: Se o banner está ativo
+          example: true
+        start_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Data de início da exibição
+        end_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Data de fim da exibição
+      required:
+        - title
+        - image_url
+        - location
+        - priority
+        - active
+
+    BannerUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Título do banner
+        description:
+          type: string
+          nullable: true
+          description: Descrição do banner
+        image_url:
+          type: string
+          description: URL da imagem do banner
+        target_url:
+          type: string
+          nullable: true
+          description: URL de destino do banner
+        location:
+          type: string
+          description: Localização do banner
+        priority:
+          type: integer
+          description: Prioridade de exibição
+        active:
+          type: boolean
+          description: Se o banner está ativo
+        start_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Data de início da exibição
+        end_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Data de fim da exibição
+
+    # ===== DESTAQUE =====
+    Destaque:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID único do destaque
+          example: 1
+        type:
+          type: string
+          description: Tipo de destaque
+          example: "filme"
+        title:
+          type: string
+          description: Título do destaque
+          example: "Filme do Mês"
+        description:
+          type: string
+          description: Descrição do destaque
+          example: "Confira nossa indicação"
+        image_url:
+          type: string
+          nullable: true
+          description: URL da imagem
+          example: "https://example.com/destaque.jpg"
+        target_url:
+          type: string
+          nullable: true
+          description: URL de destino
+          example: "https://example.com/filme"
+        priority:
+          type: integer
+          description: Prioridade de exibição
+          example: 1
+        active:
+          type: boolean
+          description: Se está ativo
+          example: true
+        created_at:
+          type: string
+          format: date-time
+          description: Data de criação
+        updated_at:
+          type: string
+          format: date-time
+          description: Data da última atualização
+
+    # ===== CARROSSEL =====
+    CarouselSlide:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID único do slide
+          example: 1
+        title:
+          type: string
+          description: Título do slide
+          example: "Morden Metal"
+        description:
+          type: string
+          description: Descrição do slide
+          example: "A melhor rádio de metal"
+        imageUrl:
+          type: string
+          description: URL da imagem
+          example: "https://example.com/slide.jpg"
+        videoUrl:
+          type: string
+          nullable: true
+          description: URL do vídeo (opcional)
+          example: "https://example.com/video.mp4"
+        order:
+          type: integer
+          description: Ordem de exibição
+          example: 1
+        isActive:
+          type: boolean
+          description: Se o slide está ativo
+          example: true
+        type:
+          type: string
+          enum: [image, video]
+          description: Tipo de slide
+          example: "image"
+        createdAt:
+          type: string
+          format: date-time
+          description: Data de criação
+
+    # ===== LINKS SOCIAIS =====
+    SocialLinks:
+      type: object
+      properties:
+        instagram:
+          type: string
+          nullable: true
+          description: URL do Instagram
+          example: "https://instagram.com/mordenmetal"
+        youtube:
+          type: string
+          nullable: true
+          description: URL do YouTube
+          example: "https://youtube.com/mordenmetal"
+        twitter:
+          type: string
+          nullable: true
+          description: URL do Twitter
+          example: "https://twitter.com/mordenmetal"
+        tiktok:
+          type: string
+          nullable: true
+          description: URL do TikTok
+          example: "https://tiktok.com/@mordenmetal"
+
+    # ===== PAGINAÇÃO =====
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Página atual
+          example: 1
+        limit:
+          type: integer
+          description: Itens por página
+          example: 10
+        total:
+          type: integer
+          description: Total de itens
+          example: 100
+        pages:
+          type: integer
+          description: Total de páginas
+          example: 10
+
+    # ===== ERRO =====
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Mensagem de erro
+          example: "Erro interno do servidor"
+        message:
+          type: string
+          description: Detalhes do erro
+          example: "Algo deu errado"
+        statusCode:
+          type: integer
+          description: Código de status HTTP
+          example: 500

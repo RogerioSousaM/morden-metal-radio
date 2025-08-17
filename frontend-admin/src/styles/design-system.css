@@ -1,0 +1,448 @@
+/* ===================================
+   DESIGN SYSTEM - TYPOGRAPHY
+   =================================== */
+
+/* Font Imports */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* CSS Custom Properties for Typography */
+:root {
+  /* Font Families */
+  --font-display: 'Orbitron', 'Courier New', monospace;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  
+  /* Font Sizes */
+  --text-xs: 0.75rem;      /* 12px */
+  --text-sm: 0.875rem;     /* 14px */
+  --text-base: 1rem;       /* 16px */
+  --text-lg: 1.125rem;     /* 18px */
+  --text-xl: 1.25rem;      /* 20px */
+  --text-2xl: 1.5rem;      /* 24px */
+  --text-3xl: 1.875rem;    /* 30px */
+  --text-4xl: 2.25rem;     /* 36px */
+  --text-5xl: 3rem;        /* 48px */
+  --text-6xl: 3.75rem;     /* 60px */
+  --text-7xl: 4.5rem;      /* 72px */
+  
+  /* Font Weights */
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-black: 900;
+  
+  /* Line Heights */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+  
+  /* Letter Spacing */
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
+}
+
+/* Typography Utility Classes */
+.font-display {
+  font-family: var(--font-display);
+  font-weight: var(--font-bold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.font-body {
+  font-family: var(--font-body);
+  font-weight: var(--font-normal);
+  line-height: var(--leading-normal);
+}
+
+/* Heading Styles */
+.heading-display {
+  font-family: var(--font-display);
+  font-weight: var(--font-black);
+  font-size: var(--text-7xl);
+  line-height: 1;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+}
+
+.heading-hero {
+  font-family: var(--font-display);
+  font-weight: var(--font-black);
+  font-size: var(--text-6xl);
+  line-height: 1;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+}
+
+.heading-1 {
+  font-family: var(--font-display);
+  font-weight: var(--font-bold);
+  font-size: var(--text-5xl);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.heading-2 {
+  font-family: var(--font-display);
+  font-weight: var(--font-bold);
+  font-size: var(--text-4xl);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.heading-3 {
+  font-family: var(--font-display);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-3xl);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+}
+
+.heading-4 {
+  font-family: var(--font-display);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-2xl);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+}
+
+.heading-5 {
+  font-family: var(--font-display);
+  font-weight: var(--font-medium);
+  font-size: var(--text-xl);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+}
+
+.heading-6 {
+  font-family: var(--font-display);
+  font-weight: var(--font-medium);
+  font-size: var(--text-lg);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+}
+
+/* Body Text Styles */
+.text-body-large {
+  font-family: var(--font-body);
+  font-size: var(--text-lg);
+  font-weight: var(--font-normal);
+  line-height: var(--leading-relaxed);
+}
+
+.text-body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--font-normal);
+  line-height: var(--leading-normal);
+}
+
+.text-body-small {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-normal);
+  line-height: var(--leading-normal);
+}
+
+.text-caption {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  line-height: var(--leading-tight);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+/* Special Text Styles */
+.text-metal {
+  font-family: var(--font-display);
+  font-weight: var(--font-bold);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+}
+
+.text-accent {
+  font-family: var(--font-display);
+  font-weight: var(--font-semibold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+/* Responsive Typography */
+@media (max-width: 768px) {
+  .heading-display {
+    font-size: var(--text-5xl);
+  }
+  
+  .heading-hero {
+    font-size: var(--text-4xl);
+  }
+  
+  .heading-1 {
+    font-size: var(--text-3xl);
+  }
+  
+  .heading-2 {
+    font-size: var(--text-2xl);
+  }
+}
+
+/* ===== DESIGN SYSTEM - MORDEN METAL ===== */
+
+/* CSS Custom Properties para Design Tokens */
+:root {
+  /* Color Palette - Dark Metal Theme */
+  --color-metal-black: #0a0a0a;
+  --color-metal-dark: #1a1a1a;
+  --color-metal-card: #2a2a2a;
+  --color-metal-border: #3a3a3a;
+  --color-metal-text: #e5e5e5;
+  --color-metal-text-secondary: #a0a0a0;
+  --color-metal-accent: #ff6b35;
+  --color-metal-orange: #ff8c42;
+  --color-metal-red: #dc2626;
+  --color-metal-green: #16a34a;
+  --color-metal-yellow: #ca8a04;
+  --color-metal-blue: #2563eb;
+  
+  /* Typography Scale */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  
+  /* Spacing Scale */
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-10: 2.5rem;
+  --spacing-12: 3rem;
+  --spacing-16: 4rem;
+  --spacing-20: 5rem;
+  
+  /* Border Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Z-Index Scale */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-toast: 1080;
+}
+
+/* ===== UTILITY CLASSES ===== */
+
+/* Typography Hierarchy */
+.text-display {
+  @apply text-4xl font-bold tracking-tight text-metal-text;
+}
+
+.text-h1 {
+  @apply text-3xl font-bold tracking-tight text-metal-text;
+}
+
+.text-h2 {
+  @apply text-2xl font-semibold tracking-tight text-metal-text;
+}
+
+.text-h3 {
+  @apply text-xl font-semibold text-metal-text;
+}
+
+.text-h4 {
+  @apply text-lg font-medium text-metal-text;
+}
+
+.text-body {
+  @apply text-base text-metal-text leading-relaxed;
+}
+
+.text-body-small {
+  @apply text-sm text-metal-text-secondary leading-relaxed;
+}
+
+.text-caption {
+  @apply text-xs text-metal-text-secondary uppercase tracking-wider;
+}
+
+/* Card System */
+.card-base {
+  @apply bg-metal-card border border-metal-border rounded-2xl shadow-lg;
+}
+
+.card-elevated {
+  @apply bg-metal-card border border-metal-border rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-300;
+}
+
+.card-interactive {
+  @apply bg-metal-card border border-metal-border rounded-2xl shadow-lg hover:shadow-xl hover:border-metal-accent/30 transition-all duration-300 cursor-pointer;
+}
+
+/* Button Variants */
+.btn-primary {
+  @apply bg-gradient-to-r from-metal-orange to-metal-accent text-white font-medium px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-metal-accent focus:ring-offset-2 focus:ring-offset-metal-dark;
+}
+
+.btn-secondary {
+  @apply bg-metal-card border border-metal-border text-metal-text font-medium px-6 py-3 rounded-xl shadow-md hover:shadow-lg hover:border-metal-accent/50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-metal-accent focus:ring-offset-2 focus:ring-offset-metal-dark;
+}
+
+.btn-destructive {
+  @apply bg-metal-red text-white font-medium px-6 py-3 rounded-xl shadow-lg hover:shadow-xl hover:bg-red-700 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-metal-dark;
+}
+
+.btn-ghost {
+  @apply text-metal-text-secondary hover:text-metal-text font-medium px-4 py-2 rounded-lg hover:bg-metal-card/50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-metal-accent focus:ring-offset-2 focus:ring-offset-metal-dark;
+}
+
+/* Form Elements */
+.form-input {
+  @apply bg-metal-card border border-metal-border text-metal-text placeholder-metal-text-secondary px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-metal-accent focus:border-metal-accent transition-all duration-200;
+}
+
+.form-select {
+  @apply bg-metal-card border border-metal-border text-metal-text px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-metal-accent focus:border-metal-accent transition-all duration-200;
+}
+
+.form-textarea {
+  @apply bg-metal-card border border-metal-border text-metal-text placeholder-metal-text-secondary px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-metal-accent focus:border-metal-accent transition-all duration-200 resize-y;
+}
+
+/* Status Indicators */
+.status-success {
+  @apply text-metal-green bg-metal-green/10 border border-metal-green/20 px-3 py-1 rounded-full text-sm font-medium;
+}
+
+.status-warning {
+  @apply text-metal-yellow bg-metal-yellow/10 border border-metal-yellow/20 px-3 py-1 rounded-full text-sm font-medium;
+}
+
+.status-error {
+  @apply text-metal-red bg-metal-red/10 border border-metal-red/20 px-3 py-1 rounded-full text-sm font-medium;
+}
+
+.status-info {
+  @apply text-metal-blue bg-metal-blue/10 border border-metal-blue/20 px-3 py-1 rounded-full text-sm font-medium;
+}
+
+/* Layout Utilities */
+.container-admin {
+  @apply max-w-7xl mx-auto px-6 py-8;
+}
+
+.section-spacing {
+  @apply space-y-8;
+}
+
+.card-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6;
+}
+
+/* Animation Classes */
+.hover-lift {
+  @apply transition-transform duration-300 hover:-translate-y-1;
+}
+
+.hover-lift-sm {
+  @apply transition-transform duration-300 hover:-translate-y-0.5;
+}
+
+.parallax-bg {
+  @apply bg-fixed bg-cover bg-center;
+}
+
+/* Responsive Typography */
+@media (max-width: 640px) {
+  .text-display {
+    @apply text-3xl;
+  }
+  
+  .text-h1 {
+    @apply text-2xl;
+  }
+  
+  .text-h2 {
+    @apply text-xl;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .hover-lift,
+  .hover-lift-sm {
+    @apply transform-none;
+  }
+  
+  .transition-all,
+  .transition-transform,
+  .transition-shadow {
+    @apply transition-none;
+  }
+}
+
+/* Focus Visible for Keyboard Navigation */
+.focus-visible:focus {
+  @apply outline-none ring-2 ring-metal-accent ring-offset-2 ring-offset-metal-dark;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-metal-border) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--color-metal-border);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-metal-accent);
+}

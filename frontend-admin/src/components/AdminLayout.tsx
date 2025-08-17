@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard, Calendar, Users, 
   Image, Share2, Settings, LogOut, Menu, X,
-  Radio, FolderOpen, Film
+  Radio, FolderOpen, Film, Music
 } from 'lucide-react'
 
 interface AdminLayoutProps {
@@ -29,8 +29,9 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
     { name: 'Arquivos', href: '/admin/files', icon: FolderOpen },
     { name: 'Usuários', href: '/admin/users', icon: Users },
     { name: 'Carrossel', href: '/admin/carousel', icon: Image },
-    { name: 'Filmaço', href: '/admin/filmaço', icon: Film },
-    { name: 'Destaques da Cena', href: '/admin/destaques', icon: Image },
+    { name: 'Filmes', href: '/admin/filmes', icon: Film },
+    { name: 'Banners', href: '/admin/banners', icon: Image },
+{ name: 'Bandas da Cena', href: '/admin/bandas', icon: Music },
     { name: 'Redes Sociais', href: '/admin/social-links', icon: Share2 },
     { name: 'Configurações', href: '/admin/settings', icon: Settings },
   ]

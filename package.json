@@ -12,6 +12,7 @@
     "start": "cd backend && npm start"
   },
   "dependencies": {
+    "express": "^5.1.0",
     "node-fetch": "^2.7.0",
     "puppeteer": "^24.15.0"
   },

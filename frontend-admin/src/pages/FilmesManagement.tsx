@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Edit, Trash2, Star, Save, Plus, Calendar, 
-  AlertCircle
+  AlertCircle, Eye
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { apiService, type Filme } from '../services/api'
@@ -9,7 +9,7 @@ import PageLayout from '../components/PageLayout'
 import Card from '../components/ui/Card'
 import Modal from '../components/ui/Modal'
 
-const FilmaçoManagement = () => {
+const FilmesManagement = () => {
   const [filmes, setFilmes] = useState<Filme[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -225,7 +225,7 @@ const FilmaçoManagement = () => {
   }
 
   return (
-    <PageLayout title="Gestão do Filmaço">
+    <PageLayout title="Gestão de Filmes">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -235,7 +235,7 @@ const FilmaçoManagement = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            🎬 Gestão do Filmaço
+            🎬 Gestão de Filmes
           </motion.h1>
           
           <motion.button
@@ -389,6 +389,9 @@ const FilmaçoManagement = () => {
                 </h2>
                 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Coluna do Formulário */}
+                    <div className="lg:col-span-2 space-y-4">
                   {/* Título */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -519,6 +522,85 @@ const FilmaçoManagement = () => {
                       Cancelar
                     </button>
                   </div>
+                    </div>
+
+                    {/* Painel de Preview */}
+                    <div className="lg:col-span-1">
+                      <div className="sticky top-6">
+                        <div className="bg-metal-card border border-metal-border rounded-lg p-4">
+                          <h3 className="heading-6 text-metal-text mb-4 flex items-center gap-2">
+                            <Eye className="w-4 h-4" />
+                            Preview ao Vivo
+                          </h3>
+                          
+                          {/* Preview do Card do Filme */}
+                          <div className="bg-metal-gray/50 rounded-lg p-4 border border-metal-border/50">
+                            {/* Imagem */}
+                            <div className="w-full h-32 bg-metal-card border border-metal-border rounded-lg overflow-hidden mb-3">
+                              {filmeForm.imagem ? (
+                                <img
+                                  src={filmeForm.imagem}
+                                  alt={filmeForm.titulo || 'Preview do filme'}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none'
+                                    e.currentTarget.nextElementSibling?.classList.remove('hidden')
+                                  }}
+                                />
+                              ) : null}
+                              <div className={`w-full h-full flex items-center justify-center ${filmeForm.imagem ? 'hidden' : ''}`}>
+                                <svg className="w-12 h-12 text-metal-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2" />
+                                </svg>
+                              </div>
+                            </div>
+
+                            {/* Título do Filme */}
+                            <h4 className="heading-5 text-metal-text mb-2">
+                              {filmeForm.titulo || 'Título do Filme'}
+                            </h4>
+
+                            {/* Ano e Nota */}
+                            <div className="flex items-center justify-between text-sm text-metal-text-secondary mb-3">
+                              <div className="flex items-center gap-2">
+                                <Calendar className="w-4 h-4" />
+                                <span>{filmeForm.ano || 'Ano'}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Star className="w-4 h-4 text-metal-accent fill-current" />
+                                <span>{filmeForm.nota || 'Nota'}</span>
+                              </div>
+                            </div>
+
+                            {/* Descrição */}
+                            <p className="text-body-small text-metal-text-secondary mb-3 line-clamp-3">
+                              {filmeForm.descricao || 'Descrição do filme aparecerá aqui...'}
+                            </p>
+
+                            {/* Status de Destaque */}
+                            {filmeForm.indicacao_do_mes && (
+                              <div className="flex items-center gap-2 text-metal-accent text-sm">
+                                <Star className="w-4 h-4 fill-current" />
+                                <span>Indicação do Mês</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Informações Adicionais */}
+                          <div className="mt-4 space-y-2 text-xs text-metal-text-secondary">
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 bg-metal-accent rounded-full"></span>
+                              <span>Preview em tempo real</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 bg-metal-accent rounded-full"></span>
+                              <span>Atualiza conforme você digita</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </form>
               </div>
             </Modal>
@@ -585,4 +667,4 @@ const FilmaçoManagement = () => {
   )
 }
 
-export default FilmaçoManagement
+export default FilmesManagement

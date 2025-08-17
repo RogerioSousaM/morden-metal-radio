@@ -7,44 +7,70 @@ export default {
   theme: {
     extend: {
       colors: {
-        'metal-dark': '#000000',
-        'metal-black': '#0b0b0b',
-        'metal-card': '#121212',
-        'metal-gray': '#1a1a1a',
-        'metal-light-gray': '#2a2a2a',
-        'metal-text': '#ffffff',
-        'metal-text-secondary': '#a0a0a0',
-        'metal-orange': '#E04E1B',
-        'metal-accent': '#FF5722',
-        'metal-red': '#f44336',
+        // Metal Design System Colors
+        'metal': {
+          'bg': 'var(--metal-bg-900)',
+          'bg-900': 'var(--metal-bg-900)',
+          'surface': 'var(--metal-surface)',
+          'surface-2': 'var(--metal-surface-2)',
+          'text': 'var(--metal-text)',
+          'text-2': 'var(--metal-text-2)',
+          'edge': 'var(--metal-edge)',
+          'light-gray': 'rgba(182, 182, 182, 0.14)',
+        },
+        'accent': {
+          'crimson': 'var(--accent-crimson)',
+          'amber': 'var(--accent-amber)',
+        },
+        // Card-specific colors
+        'card': {
+          'border': 'rgba(255, 255, 255, var(--card-border-opacity))',
+          'shadow': 'var(--card-shadow-primary)',
+          'shadow-hover': 'var(--card-shadow-hover)',
+        },
+        // Button-specific colors
+        'btn': {
+          'crimson': 'var(--btn-accent-crimson)',
+          'crimson-hover': 'var(--btn-accent-crimson-hover)',
+        }
       },
       fontFamily: {
-        'metal': ['Inter', 'sans-serif'],
+        'display': ['Orbitron', 'monospace'],
+        'body': ['Inter', 'sans-serif'],
+        'metal': ['Orbitron', 'monospace'],
       },
-      animation: {
-        'glow-pulse': 'glow-pulse 2s ease-in-out infinite alternate',
-        'micro-pulse': 'micro-pulse 2s ease-in-out infinite',
+      borderRadius: {
+        'metal-sm': 'var(--radius-sm)',
+        'metal-md': 'var(--radius-md)',
+        'metal-lg': 'var(--radius-lg)',
+        'metal-xl': 'var(--radius-xl)',
+        'xl': 'var(--radius-xl)',
       },
-      keyframes: {
-        'glow-pulse': {
-          '0%': {
-            boxShadow: '0 0 5px #f44336, 0 0 10px #f44336, 0 0 15px #f44336',
-          },
-          '100%': {
-            boxShadow: '0 0 10px #f44336, 0 0 20px #f44336, 0 0 30px #f44336',
-          },
-        },
-        'micro-pulse': {
-          '0%, 100%': {
-            transform: 'scale(1)',
-            opacity: '1',
-          },
-          '50%': {
-            transform: 'scale(1.05)',
-            opacity: '0.8',
-          },
-        },
+      boxShadow: {
+        'metal-sm': 'var(--shadow-metal-sm)',
+        'metal-md': 'var(--shadow-metal-md)',
+        'metal-lg': 'var(--shadow-metal-lg)',
+        'metal-xl': 'var(--shadow-metal-xl)',
+        'card': 'var(--card-shadow-primary)',
+        'card-hover': 'var(--card-shadow-hover)',
+        'btn': 'var(--btn-shadow)',
+        'btn-hover': 'var(--btn-shadow-hover)',
       },
+      backgroundImage: {
+        'metal-edge': 'var(--metal-edge)',
+        'metal-bg': 'var(--gradient-metal-bg)',
+        'metal-surface': 'var(--gradient-metal-surface)',
+      },
+      opacity: {
+        'grain': 'var(--grain-opacity)',
+        'card-border': 'var(--card-border-opacity)',
+      },
+      transitionDuration: {
+        'play-overlay': 'var(--play-overlay-transition)',
+      },
+      backgroundColor: {
+        'play-overlay': 'var(--play-overlay-bg)',
+      }
     },
   },
   plugins: [],

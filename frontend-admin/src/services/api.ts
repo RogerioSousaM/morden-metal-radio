@@ -8,12 +8,14 @@ interface LoginCredentials {
 interface Band {
   id: number
   name: string
-  genre: string
+  slug: string
   description: string
-  listeners: string
-  rating: number
-  isFeatured: boolean
-  image: string
+  official_url: string
+  image_url: string
+  genre_tags: string
+  featured: boolean
+  created_at: string
+  updated_at: string
 }
 
 interface Program {
@@ -72,6 +74,22 @@ interface CarouselSlide {
   createdAt: string
 }
 
+interface Banner {
+  id: number
+  title: string
+  image_url: string
+  target_url?: string
+  start_at: string
+  end_at: string
+  priority: number
+  locations: string
+  active: boolean
+  impressions: number
+  clicks: number
+  created_at: string
+  updated_at: string
+}
+
 
 
 interface SocialLinks {
@@ -79,6 +97,18 @@ interface SocialLinks {
   youtube: string
   twitter: string
   tiktok: string
+}
+
+interface Destaque {
+  id: number
+  titulo: string
+  descricao: string
+  imagem: string | null
+  link: string | null
+  ordem: number
+  ativo: boolean
+  created_at: string
+  updated_at: string
 }
 
 interface Filme {
@@ -148,7 +178,7 @@ class ApiService {
   // Bandas
   async getBands(): Promise<Band[]> {
     try {
-      const response = await fetch(`${API_BASE_URL}/bands`, {
+      const response = await fetch(`${API_BASE_URL}/bandas`, {
         headers: this.getAuthHeaders()
       })
 
@@ -165,7 +195,7 @@ class ApiService {
 
   async createBand(band: Omit<Band, 'id'>): Promise<Band> {
     try {
-      const response = await fetch(`${API_BASE_URL}/bands`, {
+      const response = await fetch(`${API_BASE_URL}/bandas`, {
         method: 'POST',
         headers: this.getAuthHeaders(),
         body: JSON.stringify(band)
@@ -184,7 +214,7 @@ class ApiService {
 
   async updateBand(id: number, band: Partial<Band>): Promise<Band> {
     try {
-      const response = await fetch(`${API_BASE_URL}/bands/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/bandas/${id}`, {
         method: 'PUT',
         headers: this.getAuthHeaders(),
         body: JSON.stringify(band)
@@ -203,7 +233,7 @@ class ApiService {
 
   async deleteBand(id: number): Promise<void> {
     try {
-      const response = await fetch(`${API_BASE_URL}/bands/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/bandas/${id}`, {
         method: 'DELETE',
         headers: this.getAuthHeaders()
       })
@@ -268,6 +298,115 @@ class ApiService {
       return await response.json()
     } catch (error) {
       console.error('Erro ao buscar estatísticas:', error)
+      throw error
+    }
+  }
+
+  // Schedule/Agenda
+  async getSchedule(): Promise<any[]> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/schedule`, {
+        headers: this.getAuthHeaders()
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao buscar agenda')
+      }
+
+      const data = await response.json()
+      // Garantir que sempre retorne um array
+      return Array.isArray(data) ? data : (data.schedules || data.schedule || [])
+    } catch (error) {
+      console.error('Erro ao buscar agenda:', error)
+      throw error
+    }
+  }
+
+  async createSchedule(schedule: any): Promise<any> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/schedule`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(schedule)
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao criar evento na agenda')
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Erro ao criar evento na agenda:', error)
+      throw error
+    }
+  }
+
+  async updateSchedule(id: number, schedule: any): Promise<any> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/schedule/${id}`, {
+        method: 'PUT',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(schedule)
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao atualizar evento na agenda')
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Erro ao atualizar evento na agenda:', error)
+      throw error
+    }
+  }
+
+  async deleteSchedule(id: number): Promise<void> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/schedule/${id}`, {
+        method: 'DELETE',
+        headers: this.getAuthHeaders()
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao excluir evento da agenda')
+      }
+    } catch (error) {
+      console.error('Erro ao excluir evento da agenda:', error)
+      throw error
+    }
+  }
+
+  async toggleScheduleStatus(id: number): Promise<any> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/schedule/${id}/toggle`, {
+        method: 'PUT',
+        headers: this.getAuthHeaders()
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao alternar status do evento')
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Erro ao alternar status do evento:', error)
+      throw error
+    }
+  }
+
+  async getScheduleStats(): Promise<any> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/schedule/stats`, {
+        headers: this.getAuthHeaders()
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao buscar estatísticas da agenda')
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Erro ao buscar estatísticas da agenda:', error)
       throw error
     }
   }
@@ -664,10 +803,9 @@ class ApiService {
   }
 
   // Top do Mês - Configuração
-  /*
-  async getTopMonthConfig(): Promise<TopMonthConfig> {
+  async getTopMonthConfig(): Promise<any> {
     try {
-      const response = await fetch(`${API_BASE_URL}/top-month/config`, {
+      const response = await fetch(`${API_BASE_URL}/top-month`, {
         headers: this.getAuthHeaders()
       })
 
@@ -682,7 +820,7 @@ class ApiService {
     }
   }
 
-  async updateTopMonthConfig(config: Partial<TopMonthConfig>): Promise<TopMonthConfig> {
+  async updateTopMonthConfig(config: any): Promise<any> {
     try {
       const response = await fetch(`${API_BASE_URL}/top-month/config`, {
         method: 'PUT',
@@ -702,7 +840,7 @@ class ApiService {
   }
 
   // Top do Mês - Bandas
-  async getTopMonthBands(): Promise<TopMonthBand[]> {
+  async getTopMonthBands(): Promise<any[]> {
     try {
       const response = await fetch(`${API_BASE_URL}/top-month/bands`, {
         headers: this.getAuthHeaders()
@@ -719,7 +857,7 @@ class ApiService {
     }
   }
 
-  async createTopMonthBand(band: Omit<TopMonthBand, 'id'>): Promise<TopMonthBand> {
+  async createTopMonthBand(band: any): Promise<any> {
     try {
       const response = await fetch(`${API_BASE_URL}/top-month/bands`, {
         method: 'POST',
@@ -738,7 +876,7 @@ class ApiService {
     }
   }
 
-  async updateTopMonthBand(id: number, band: Partial<TopMonthBand>): Promise<TopMonthBand> {
+  async updateTopMonthBand(id: number, band: any): Promise<any> {
     try {
       const response = await fetch(`${API_BASE_URL}/top-month/bands/${id}`, {
         method: 'PUT',
@@ -790,7 +928,6 @@ class ApiService {
       throw error
     }
   }
-  */
 
   // Links Sociais
   async getSocialLinks(): Promise<SocialLinks> {
@@ -951,7 +1088,157 @@ class ApiService {
       throw error
     }
   }
+
+  // Métodos para Banners
+  async getBanners(): Promise<Banner[]> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/banners`, {
+        headers: this.getAuthHeaders()
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao buscar banners')
+      }
+
+      const data = await response.json()
+      return data.banners || []
+    } catch (error) {
+      console.error('Erro ao buscar banners:', error)
+      throw error
+    }
+  }
+
+  async createBanner(banner: Omit<Banner, 'id' | 'created_at' | 'updated_at' | 'impressions' | 'clicks'>): Promise<Banner> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/banners`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(banner)
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao criar banner')
+      }
+
+      const data = await response.json()
+      return data.banner
+    } catch (error) {
+      console.error('Erro ao criar banner:', error)
+      throw error
+    }
+  }
+
+  async updateBanner(id: number, banner: Partial<Banner>): Promise<Banner> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/banners/${id}`, {
+        method: 'PUT',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(banner)
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao atualizar banner')
+      }
+
+      const data = await response.json()
+      return data.banner
+    } catch (error) {
+      console.error('Erro ao atualizar banner:', error)
+      throw error
+    }
+  }
+
+  async deleteBanner(id: number): Promise<void> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/banners/${id}`, {
+        method: 'DELETE',
+        headers: this.getAuthHeaders()
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao excluir banner')
+      }
+    } catch (error) {
+      console.error('Erro ao excluir banner:', error)
+      throw error
+    }
+  }
+
+  // Métodos para Destaques
+  async getDestaques(): Promise<Destaque[]> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/destaques/admin`, {
+        headers: this.getAuthHeaders()
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao buscar destaques')
+      }
+
+      const data = await response.json()
+      return data.destaques || []
+    } catch (error) {
+      console.error('Erro ao buscar destaques:', error)
+      throw error
+    }
+  }
+
+  async createDestaque(destaque: Omit<Destaque, 'id' | 'created_at' | 'updated_at'>): Promise<Destaque> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/destaques`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(destaque)
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao criar destaque')
+      }
+
+      const data = await response.json()
+      return data.destaque
+    } catch (error) {
+      console.error('Erro ao criar destaque:', error)
+      throw error
+    }
+  }
+
+  async updateDestaque(id: number, destaque: Partial<Destaque>): Promise<Destaque> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/destaques/${id}`, {
+        method: 'PUT',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(destaque)
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao atualizar destaque')
+      }
+
+      const data = await response.json()
+      return data.destaque
+    } catch (error) {
+      console.error('Erro ao atualizar destaque:', error)
+      throw error
+    }
+  }
+
+  async deleteDestaque(id: number): Promise<void> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/destaques/${id}`, {
+        method: 'DELETE',
+        headers: this.getAuthHeaders()
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao excluir destaque')
+      }
+    } catch (error) {
+      console.error('Erro ao excluir destaque:', error)
+      throw error
+    }
+  }
 }
 
 export const apiService = new ApiService()
-export type { Band, Program, Stats, LoginCredentials, News, User, CarouselSlide, SocialLinks, Filme } 
+export type { Band, Program, Stats, LoginCredentials, News, User, CarouselSlide, SocialLinks, Filme, Banner, Destaque } 

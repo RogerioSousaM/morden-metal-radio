@@ -10,7 +10,7 @@ interface CardProps {
 }
 
 const Card = ({ children, className = '', onClick, hover = false, delay = 0 }: CardProps) => {
-  const baseClasses = 'card'
+  const baseClasses = 'bg-metal-card border border-metal-border rounded-2xl shadow-lg p-6'
   const combinedClasses = `${baseClasses} ${className}`
 
   const cardVariants = {
@@ -53,7 +53,7 @@ interface CardHeaderProps {
 }
 
 export const CardHeader = ({ children, className = '' }: CardHeaderProps) => (
-  <div className={`card-header ${className}`}>
+  <div className={`mb-4 ${className}`}>
     {children}
   </div>
 )
@@ -64,7 +64,7 @@ interface CardTitleProps {
 }
 
 export const CardTitle = ({ children, className = '' }: CardTitleProps) => (
-  <h3 className={`card-title ${className}`}>
+  <h3 className={`heading-5 text-metal-text mb-2 ${className}`}>
     {children}
   </h3>
 )
@@ -75,7 +75,7 @@ interface CardSubtitleProps {
 }
 
 export const CardSubtitle = ({ children, className = '' }: CardSubtitleProps) => (
-  <p className={`card-subtitle ${className}`}>
+  <p className={`text-body-small text-metal-text-secondary ${className}`}>
     {children}
   </p>
 )

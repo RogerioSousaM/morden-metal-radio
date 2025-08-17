@@ -4,12 +4,6 @@ const { authenticateToken } = require('../middleware/auth')
 
 const router = express.Router()
 
-// Função para obter a instância do banco de dados
-const getDatabase = () => {
-  const Database = require('../../database/database')
-  return new Database()
-}
-
 // Middleware de validação
 const validate = (req, res, next) => {
   const errors = validationResult(req)
@@ -25,18 +19,52 @@ const validate = (req, res, next) => {
 
 // GET /api/filmes - Listar todos os filmes (público)
 router.get('/', async (req, res) => {
-  const db = getDatabase()
   try {
-    await db.init()
-    const filmes = await db.all(
-      "SELECT id, titulo, descricao, ano, nota, imagem, indicacao_do_mes, created_at FROM filmes ORDER BY created_at DESC"
-    );
-    res.json({ filmes });
+    const db = req.db
+    if (!db) {
+      return res.status(500).json({ error: 'Database não disponível' })
+    }
+
+    const page = parseInt(req.query.page) || 1
+    const limit = parseInt(req.query.limit) || 10
+    const featured = req.query.featured === '1'
+    const offset = (page - 1) * limit
+
+    let whereClause = ''
+    let params = []
+
+    if (featured) {
+      whereClause = 'WHERE indicacao_do_mes = 1'
+    }
+
+    // Query para contar total
+    const countQuery = `SELECT COUNT(*) as total FROM filmes ${whereClause}`
+    const countResult = await db.get(countQuery, params)
+    const total = countResult.total
+
+    // Query para buscar dados
+    const dataQuery = `
+      SELECT id, titulo, descricao, ano, nota, imagem, indicacao_do_mes, created_at
+      FROM filmes 
+      ${whereClause}
+      ORDER BY indicacao_do_mes DESC, created_at DESC
+      LIMIT ? OFFSET ?
+    `
+    
+    const filmes = await db.all(dataQuery, [...params, limit, offset])
+
+    res.json({
+      filmes: filmes,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    })
   } catch (error) {
-    console.error('Erro ao buscar filmes:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  } finally {
-    await db.close()
+    console.error('Erro ao buscar filmes:', error)
+    res.status(500).json({ error: 'Erro interno do servidor' })
   }
 })
 
@@ -51,21 +79,24 @@ router.get('/test', authenticateToken, async (req, res) => {
 
 // GET /api/filmes/destaque - Retornar indicação do mês (público)
 router.get('/destaque', async (req, res) => {
-  const db = getDatabase()
   try {
-    await db.init()
+    const db = req.db
+    if (!db) {
+      return res.status(500).json({ error: 'Database não disponível' })
+    }
+
     const filme = await db.get(
       "SELECT id, titulo, descricao, ano, nota, imagem, indicacao_do_mes, created_at FROM filmes WHERE indicacao_do_mes = 1 ORDER BY created_at DESC LIMIT 1"
-    );
+    )
+    
     if (!filme) {
-      return res.status(404).json({ error: 'Nenhuma indicação do mês encontrada' });
+      return res.status(404).json({ error: 'Nenhuma indicação do mês encontrada' })
     }
-    res.json({ filme });
+    
+    res.json({ filme })
   } catch (error) {
-    console.error('Erro ao buscar filme em destaque:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  } finally {
-    await db.close()
+    console.error('Erro ao buscar filme em destaque:', error)
+    res.status(500).json({ error: 'Erro interno do servidor' })
   }
 })
 
@@ -92,26 +123,29 @@ router.post('/', authenticateToken, [
     .custom((value) => {
       if (value && value.trim() !== '') {
         try {
-          new URL(value);
-          return true;
+          new URL(value)
+          return true
         } catch {
-          return false;
+          return false
         }
       }
-      return true;
+      return true
     })
     .withMessage('URL da imagem deve ser válida'),
   body('indicacao_do_mes')
     .optional()
     .custom((value) => {
-      return value === true || value === false || value === 0 || value === 1;
+      return value === true || value === false || value === 0 || value === 1
     })
     .withMessage('Indicação do mês deve ser um valor booleano'),
   validate
 ], async (req, res) => {
-  const db = getDatabase()
   try {
-    await db.init()
+    const db = req.db
+    if (!db) {
+      return res.status(500).json({ error: 'Database não disponível' })
+    }
+
     const { titulo, descricao, ano, nota, imagem, indicacao_do_mes } = req.body
 
     // Se este filme será indicação do mês, remover indicação dos outros
@@ -124,15 +158,6 @@ router.post('/', authenticateToken, [
     const notaFloat = parseFloat(nota)
     const indicacaoBool = Boolean(indicacao_do_mes)
     const imagemUrl = imagem && imagem.trim() !== '' ? imagem : null
-    
-    console.log('Dados convertidos para INSERT:', {
-      titulo,
-      descricao,
-      ano: anoInt,
-      nota: notaFloat,
-      imagem: imagemUrl,
-      indicacao_do_mes: indicacaoBool
-    })
     
     const result = await db.run(`
       INSERT INTO filmes (titulo, descricao, ano, nota, imagem, indicacao_do_mes)
@@ -148,8 +173,6 @@ router.post('/', authenticateToken, [
   } catch (error) {
     console.error('Erro ao criar filme:', error)
     res.status(500).json({ error: 'Erro interno do servidor' })
-  } finally {
-    await db.close()
   }
 })
 
@@ -176,66 +199,49 @@ router.put('/:id', authenticateToken, [
     .custom((value) => {
       if (value && value.trim() !== '') {
         try {
-          new URL(value);
-          return true;
+          new URL(value)
+          return true
         } catch {
-          return false;
+          return false
         }
       }
-      return true;
+      return true
     })
     .withMessage('URL da imagem deve ser válida'),
   body('indicacao_do_mes')
     .optional()
     .custom((value) => {
-      return value === true || value === false || value === 0 || value === 1;
+      return value === true || value === false || value === 0 || value === 1
     })
     .withMessage('Indicação do mês deve ser um valor booleano'),
   validate
 ], async (req, res) => {
-  const db = getDatabase()
   try {
-    console.log('=== ATUALIZAÇÃO DE FILME ===')
-    console.log('ID do filme:', req.params.id)
-    console.log('Dados recebidos:', req.body)
-    console.log('Headers:', req.headers)
-    
-    await db.init()
+    const db = req.db
+    if (!db) {
+      return res.status(500).json({ error: 'Database não disponível' })
+    }
+
     const { id } = req.params
     const { titulo, descricao, ano, nota, imagem, indicacao_do_mes } = req.body
 
     // Verificar se o filme existe
     const filmeExistente = await db.get('SELECT * FROM filmes WHERE id = ?', [id])
-    console.log('Filme existente:', filmeExistente)
     
     if (!filmeExistente) {
-      console.log('Filme não encontrado')
       return res.status(404).json({ error: 'Filme não encontrado' })
     }
 
     // Se este filme será indicação do mês, remover indicação dos outros
     if (indicacao_do_mes) {
-      console.log('Removendo indicação dos outros filmes')
       await db.run('UPDATE filmes SET indicacao_do_mes = 0 WHERE id != ?', [id])
     }
-
-    console.log('Executando UPDATE com dados:', [titulo, descricao, ano, nota, imagem || null, indicacao_do_mes || false, id])
     
     // Converter tipos adequadamente
     const anoInt = parseInt(ano)
     const notaFloat = parseFloat(nota)
     const indicacaoBool = Boolean(indicacao_do_mes)
     const imagemUrl = imagem && imagem.trim() !== '' ? imagem : null
-    
-    console.log('Dados convertidos para UPDATE:', {
-      titulo,
-      descricao,
-      ano: anoInt,
-      nota: notaFloat,
-      imagem: imagemUrl,
-      indicacao_do_mes: indicacaoBool,
-      id
-    })
     
     await db.run(`
       UPDATE filmes 
@@ -245,26 +251,22 @@ router.put('/:id', authenticateToken, [
     `, [titulo, descricao, anoInt, notaFloat, imagemUrl, indicacaoBool, id])
 
     const filmeAtualizado = await db.get('SELECT * FROM filmes WHERE id = ?', [id])
-    console.log('Filme atualizado:', filmeAtualizado)
     
-    res.json({ 
-      message: 'Filme atualizado com sucesso',
-      filme: filmeAtualizado 
-    })
+    res.json({ filme: filmeAtualizado })
   } catch (error) {
-    console.error('Erro detalhado ao atualizar filme:', error)
-    console.error('Stack trace:', error.stack)
-    res.status(500).json({ error: `Erro interno do servidor: ${error.message}` })
-  } finally {
-    await db.close()
+    console.error('Erro ao atualizar filme:', error)
+    res.status(500).json({ error: 'Erro interno do servidor' })
   }
 })
 
 // DELETE /api/filmes/:id - Excluir filme (admin)
 router.delete('/:id', authenticateToken, async (req, res) => {
-  const db = getDatabase()
   try {
-    await db.init()
+    const db = req.db
+    if (!db) {
+      return res.status(500).json({ error: 'Database não disponível' })
+    }
+
     const { id } = req.params
 
     // Verificar se o filme existe
@@ -279,8 +281,6 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Erro ao excluir filme:', error)
     res.status(500).json({ error: 'Erro interno do servidor' })
-  } finally {
-    await db.close()
   }
 })
 

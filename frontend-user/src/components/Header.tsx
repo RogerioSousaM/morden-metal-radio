@@ -1,147 +1,221 @@
-import { motion } from 'framer-motion'
-import { Radio, Instagram, Youtube, Twitter, Music } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Music, X } from 'lucide-react'
 
-interface SocialLinks {
-  instagram: string
-  youtube: string
-  twitter: string
-  tiktok: string
-}
+const Header: React.FC = () => {
+  const [isScrolled, setIsScrolled] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [announcement, setAnnouncement] = useState('')
 
-const Header = () => {
-  const [socialLinks, setSocialLinks] = useState<SocialLinks>({
-    instagram: '',
-    youtube: '',
-    twitter: '',
-    tiktok: ''
-  })
-
-  const navItems = [
-    { label: 'Programação', href: '#programacao' },
-    { label: 'Filmaço', href: '#filmaço' },
-    { label: 'Destaques', href: '#destaques' },
-  ]
-
+  // Detectar scroll para comportamento sticky
   useEffect(() => {
-    const loadSocialLinks = async () => {
-      try {
-        const response = await fetch('/api/social-links')
-        if (response.ok) {
-          const data = await response.json()
-          setSocialLinks(data)
-        }
-      } catch (error) {
-        console.error('Erro ao carregar links sociais:', error)
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // Fechar menu mobile ao clicar em um item
+  const handleNavClick = () => {
+    setIsMobileMenuOpen(false)
+  }
+
+  // Fechar menu mobile ao pressionar ESC
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsMobileMenuOpen(false)
       }
     }
 
-    loadSocialLinks()
-  }, [])
+    if (isMobileMenuOpen) {
+      document.addEventListener('keydown', handleEscape)
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+      document.body.style.overflow = 'unset'
+    }
+  }, [isMobileMenuOpen])
 
   return (
-    <motion.header 
-      className="fixed top-0 left-0 right-0 z-50 bg-metal-dark/90 backdrop-blur-md"
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <motion.div 
-            className="flex items-center gap-3"
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Radio className="w-8 h-8 text-metal-orange" />
-            <h1 className="text-xl font-bold text-metal-text tracking-widest uppercase">
-              Morden Metal
-            </h1>
-          </motion.div>
+    <>
+      {/* Skip Links para acessibilidade */}
+      <nav aria-label="Skip navigation">
+        <a href="#main-content" className="skip-link">
+          Pular para o conteúdo principal
+        </a>
+        <a href="#bandas" className="skip-link">
+          Pular para Bandas da Cena
+        </a>
+      </nav>
 
-          {/* Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
-            {navItems.map((item, index) => (
-              <motion.a
-                key={item.label}
-                href={item.href}
-                className="nav-link"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-                whileHover={{ y: -2 }}
-              >
-                {item.label}
-              </motion.a>
-            ))}
+      {/* Live Region para anúncios */}
+      <div aria-live="polite" aria-atomic="true" className="live-region">
+        {announcement}
+      </div>
+
+      <header className={`header ${isScrolled ? 'scrolled backdrop-blur-sm bg-black/40 border-b border-metal-light-gray/14' : ''}`}>
+        <div className="header-content">
+          {/* Logo */}
+          <motion.a
+            href="/"
+            className="header-logo"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            aria-label="Página inicial Metalcore"
+          >
+            <Music className="header-logo-icon" />
+            <span className="font-display">METALCORE</span>
+          </motion.a>
+
+          {/* Desktop Navigation */}
+          <nav className="header-nav">
+            <a href="#bandas" className="header-nav-item active">
+              Bandas da Cena
+            </a>
+            <a href="#programas" className="header-nav-item">
+              Programas
+            </a>
+            <a href="#filmes" className="header-nav-item">
+              Filmaço
+            </a>
+            <a href="#noticias" className="header-nav-item">
+              Notícias
+            </a>
           </nav>
 
-          {/* Social Links (Desktop) */}
-          <div className="hidden md:flex items-center gap-3">
-            {socialLinks.instagram && (
-              <motion.a
-                href={socialLinks.instagram}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-metal-text-secondary hover:text-metal-orange transition-colors"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Instagram className="w-5 h-5" />
-              </motion.a>
-            )}
-            {socialLinks.youtube && (
-              <motion.a
-                href={socialLinks.youtube}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-metal-text-secondary hover:text-metal-orange transition-colors"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Youtube className="w-5 h-5" />
-              </motion.a>
-            )}
-            {socialLinks.twitter && (
-              <motion.a
-                href={socialLinks.twitter}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-metal-text-secondary hover:text-metal-orange transition-colors"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Twitter className="w-5 h-5" />
-              </motion.a>
-            )}
-            {socialLinks.tiktok && (
-              <motion.a
-                href={socialLinks.tiktok}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-metal-text-secondary hover:text-metal-orange transition-colors"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Music className="w-5 h-5" />
-              </motion.a>
-            )}
-          </div>
+          {/* Header Actions */}
+          <div className="header-actions">
+            {/* Primary CTA */}
+            <motion.a
+              href="#listen-live"
+              className="btn-accent-base touch-target"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              aria-label="Ouvir rádio ao vivo"
+              onFocus={() => setAnnouncement('Botão Listen Live focado')}
+            >
+              🎧 Listen Live Now
+            </motion.a>
 
-          {/* Mobile Menu Button */}
-          <motion.button
-            className="md:hidden p-2 text-metal-text hover:text-metal-orange transition-colors"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </motion.button>
+            {/* Mini Player Icon */}
+            <motion.button
+              className="header-player touch-target"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              aria-label="Abrir player de música"
+              onFocus={() => setAnnouncement('Player de música focado')}
+            >
+              <Music size={20} />
+            </motion.button>
+
+            {/* Mobile Menu Toggle */}
+            <button
+              className="mobile-menu-toggle touch-target"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Abrir menu de navegação"
+              aria-expanded={isMobileMenuOpen}
+              onFocus={() => setAnnouncement('Menu de navegação focado')}
+            >
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
+          </div>
         </div>
-      </div>
-    </motion.header>
+      </header>
+
+      {/* Mobile Slide-over Menu */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+
+            {/* Menu */}
+            <motion.div
+              className="mobile-menu"
+              initial={{ right: '-100%' }}
+              animate={{ right: 0 }}
+              exit={{ right: '-100%' }}
+              transition={{ type: 'tween', duration: 0.3 }}
+            >
+              {/* Menu Header */}
+              <div className="mobile-menu-header">
+                <div className="header-logo">
+                  <Music className="header-logo-icon" />
+                  <span>METALCORE</span>
+                </div>
+                <button
+                  className="mobile-menu-close"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  aria-label="Fechar menu"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              {/* Mobile Navigation */}
+              <nav className="mobile-nav">
+                <a
+                  href="#bandas"
+                  className="mobile-nav-item active"
+                  onClick={handleNavClick}
+                >
+                  🎸 Bandas da Cena
+                </a>
+                <a
+                  href="#programas"
+                  className="mobile-nav-item"
+                  onClick={handleNavClick}
+                >
+                  📻 Programas
+                </a>
+                <a
+                  href="#filmes"
+                  className="mobile-nav-item"
+                  onClick={handleNavClick}
+                >
+                  🎬 Filmaço
+                </a>
+                <a
+                  href="#noticias"
+                  className="mobile-nav-item"
+                  onClick={handleNavClick}
+                >
+                  📰 Notícias
+                </a>
+              </nav>
+
+              {/* Mobile CTA */}
+              <div className="mt-8 pt-6 border-t border-metal-edge">
+                <motion.a
+                  href="#listen-live"
+                  className="header-cta w-full text-center justify-center"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleNavClick}
+                >
+                  🎧 Listen Live Now
+                </motion.a>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   )
 }
 

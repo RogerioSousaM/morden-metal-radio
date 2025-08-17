@@ -50,11 +50,11 @@ const PageLayout = memo(({
           )}
 
           {/* Title */}
-          <h1 className="text-4xl font-bold text-white mb-4">{title}</h1>
+          <h1 className="heading-2 text-white mb-4">{title}</h1>
           
           {/* Subtitle */}
           {subtitle && (
-            <p className="text-metal-text-secondary max-w-2xl">
+            <p className="text-body-large text-metal-text-secondary max-w-2xl">
               {subtitle}
             </p>
           )}

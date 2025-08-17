@@ -1,81 +1,105 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { Edit, Trash2, Clock, Users, Save, AlertTriangle, Loader2 } from 'lucide-react'
-import { useState } from 'react'
+import { Edit, Trash2, Clock, Users, Save, AlertTriangle, Loader2, Plus, Calendar, Eye, EyeOff } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { apiService } from '../services/api'
 import PageLayout from '../components/PageLayout'
 import Card from '../components/ui/Card'
 import Modal from '../components/ui/Modal'
 
-interface Program {
+interface Schedule {
   id: number
   title: string
+  description: string
+  startDate: string
+  endDate: string
   startTime: string
   endTime: string
+  location: string
+  type: 'show' | 'event' | 'interview' | 'special'
+  isActive: boolean
+  maxAttendees: number
+  currentAttendees: number
   host: string
   genre: string
+  createdAt: string
+  updatedAt: string
+}
+
+interface ScheduleFormData {
+  title: string
   description: string
-  isLive: boolean
-  listeners: string
+  startDate: string
+  endDate: string
+  startTime: string
+  endTime: string
+  location: string
+  type: 'show' | 'event' | 'interview' | 'special'
+  maxAttendees: number
+  host: string
+  genre: string
 }
 
 const ScheduleManagement = () => {
-  const [programs, setPrograms] = useState<Program[]>([
-    {
-      id: 1,
-      title: 'Metal Noturno',
-      startTime: '00:00',
-      endTime: '06:00',
-      host: 'DJ Shadow',
-      genre: 'Classic Metal',
-      description: 'Os melhores clássicos do metal para acompanhar a madrugada',
-      isLive: false,
-      listeners: '234'
-    },
-    {
-      id: 2,
-      title: 'Wake Up Metal',
-      startTime: '06:00',
-      endTime: '10:00',
-      host: 'DJ Thunder',
-      genre: 'Power Metal',
-      description: 'Energia pura para começar o dia com força total',
-      isLive: true,
-      listeners: '567'
-    }
-  ])
-
+  const [schedules, setSchedules] = useState<Schedule[]>([])
+  const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingProgram, setEditingProgram] = useState<Program | null>(null)
+  const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null)
   const [saving, setSaving] = useState(false)
-  const [formData, setFormData] = useState({
+  const [error, setError] = useState('')
+  const [formData, setFormData] = useState<ScheduleFormData>({
     title: '',
+    description: '',
+    startDate: '',
+    endDate: '',
     startTime: '',
     endTime: '',
+    location: '',
+    type: 'show',
+    maxAttendees: 100,
     host: '',
-    genre: '',
-    description: '',
-    isLive: false,
-    listeners: ''
+    genre: ''
   })
   const [timeConflict, setTimeConflict] = useState<string | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
-  const [previewProgram, setPreviewProgram] = useState<Program | null>(null)
+  const [previewSchedule, setPreviewSchedule] = useState<Schedule | null>(null)
 
-  const checkTimeConflict = (startTime: string, endTime: string, excludeId?: number) => {
-    const start = new Date(`2000-01-01 ${startTime}`)
-    const end = new Date(`2000-01-01 ${endTime}`)
+  // Carregar agenda
+  useEffect(() => {
+    loadSchedules()
+  }, [])
+
+  const loadSchedules = async () => {
+    try {
+      setLoading(true)
+      const data = await apiService.getSchedule()
+      // Garantir que data seja sempre um array
+      const schedulesArray = Array.isArray(data) ? data : []
+      setSchedules(schedulesArray)
+    } catch (error) {
+      setError('Erro ao carregar agenda')
+      console.error('Erro ao carregar agenda:', error)
+      setSchedules([]) // Definir como array vazio em caso de erro
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const checkTimeConflict = (startDate: string, startTime: string, endDate: string, endTime: string, excludeId?: number) => {
+    const start = new Date(`${startDate} ${startTime}`)
+    const end = new Date(`${endDate} ${endTime}`)
     
     if (start >= end) {
-      return 'Horário de início deve ser menor que o horário de fim'
+      return 'Data/horário de início deve ser menor que data/horário de fim'
     }
 
-    for (const program of programs) {
-      if (excludeId && program.id === excludeId) continue
+    for (const schedule of schedules) {
+      if (excludeId && schedule.id === excludeId) continue
       
-      const programStart = new Date(`2000-01-01 ${program.startTime}`)
-      const programEnd = new Date(`2000-01-01 ${program.endTime}`)
+      const scheduleStart = new Date(`${schedule.startDate} ${schedule.startTime}`)
+      const scheduleEnd = new Date(`${schedule.endDate} ${schedule.endTime}`)
       
-      if ((start < programEnd && end > programStart)) {
-        return `Conflito com "${program.title}" (${program.startTime} - ${program.endTime})`
+      if ((start < scheduleEnd && end > scheduleStart)) {
+        return `Conflito com "${schedule.title}" (${schedule.startDate} ${schedule.startTime} - ${schedule.endDate} ${schedule.endTime})`
       }
     }
     
@@ -85,11 +109,14 @@ const ScheduleManagement = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
+    setError('')
     
     const conflict = checkTimeConflict(
-      formData.startTime, 
-      formData.endTime, 
-      editingProgram?.id
+      formData.startDate, 
+      formData.startTime,
+      formData.endDate,
+      formData.endTime,
+      editingSchedule?.id
     )
     
     if (conflict) {
@@ -98,83 +125,137 @@ const ScheduleManagement = () => {
       return
     }
     
-    setTimeConflict(null)
-    
-    // Simular salvamento
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    if (editingProgram) {
-      setPrograms(programs.map(program => 
-        program.id === editingProgram.id ? { ...formData, id: program.id } : program
-      ))
-    } else {
-      const newProgram = {
-        ...formData,
-        id: Math.max(...programs.map(p => p.id)) + 1
+    try {
+      if (editingSchedule) {
+        await apiService.updateSchedule(editingSchedule.id, formData)
+      } else {
+        await apiService.createSchedule(formData)
       }
-      setPrograms([...programs, newProgram])
+      
+      setIsModalOpen(false)
+      setEditingSchedule(null)
+      resetForm()
+      loadSchedules()
+    } catch (error) {
+      setError('Erro ao salvar evento na agenda')
+      console.error('Erro ao salvar evento na agenda:', error)
+    } finally {
+      setSaving(false)
     }
-    
-    setIsModalOpen(false)
-    setEditingProgram(null)
-    resetForm()
-    setSaving(false)
+  }
+
+  const handleEdit = (schedule: Schedule) => {
+    setEditingSchedule(schedule)
+    setFormData({
+      title: schedule.title,
+      description: schedule.description,
+      startDate: schedule.startDate,
+      endDate: schedule.endDate,
+      startTime: schedule.startTime,
+      endTime: schedule.endTime,
+      location: schedule.location,
+      type: schedule.type,
+      maxAttendees: schedule.maxAttendees,
+      host: schedule.host,
+      genre: schedule.genre
+    })
+    setIsModalOpen(true)
+  }
+
+  const handleDelete = async (id: number) => {
+    if (window.confirm('Tem certeza que deseja excluir este evento?')) {
+      try {
+        await apiService.deleteSchedule(id)
+        loadSchedules()
+      } catch (error) {
+        setError('Erro ao excluir evento')
+        console.error('Erro ao excluir evento:', error)
+      }
+    }
+  }
+
+  const handleToggleStatus = async (id: number) => {
+    try {
+      await apiService.toggleScheduleStatus(id)
+      loadSchedules()
+    } catch (error) {
+      setError('Erro ao alternar status do evento')
+      console.error('Erro ao alternar status do evento:', error)
+    }
+  }
+
+  const handlePreview = (schedule: Schedule) => {
+    setPreviewSchedule(schedule)
+    setIsPreviewOpen(true)
   }
 
   const resetForm = () => {
     setFormData({
       title: '',
+      description: '',
+      startDate: '',
+      endDate: '',
       startTime: '',
       endTime: '',
+      location: '',
+      type: 'show',
+      maxAttendees: 100,
       host: '',
-      genre: '',
-      description: '',
-      isLive: false,
-      listeners: ''
+      genre: ''
     })
+    setTimeConflict(null)
+    setError('')
   }
 
-  const handleEdit = (program: Program) => {
-    setEditingProgram(program)
-    setFormData(program)
+  const openCreateModal = () => {
+    setEditingSchedule(null)
+    resetForm()
     setIsModalOpen(true)
   }
 
-  const handleDelete = (id: number) => {
-    if (confirm('Tem certeza que deseja excluir este programa?')) {
-      setPrograms(programs.filter(program => program.id !== id))
+  const closeModal = () => {
+    setIsModalOpen(false)
+    setEditingSchedule(null)
+    resetForm()
+  }
+
+  const formatDate = (date: string | undefined | null) => {
+    if (!date) return 'N/A'
+    try {
+      const d = new Date(date)
+      if (isNaN(d.getTime())) return 'N/A'
+      
+      let month = '' + (d.getMonth() + 1)
+      let day = '' + d.getDate()
+      const year = d.getFullYear()
+
+      if (month.length < 2)
+        month = '0' + month
+      if (day.length < 2)
+        day = '0' + day
+
+      return [year, month, day].join('-')
+    } catch (error) {
+      return 'N/A'
     }
   }
 
-  const formatTime = (time: string) => {
-    const [hours, minutes] = time.split(':')
-    const hour = parseInt(hours)
-    const ampm = hour >= 12 ? 'PM' : 'AM'
-    const displayHour = hour % 12 || 12
-    return `${displayHour}:${minutes} ${ampm}`
+  const formatTime = (time: string | undefined | null) => {
+    if (!time) return 'N/A'
+    try {
+      const [hours, minutes] = time.split(':')
+      const hour = parseInt(hours)
+      const ampm = hour >= 12 ? 'PM' : 'AM'
+      const displayHour = hour % 12 || 12
+      return `${displayHour}:${minutes} ${ampm}`
+    } catch (error) {
+      return 'N/A'
+    }
   }
 
-  const handleAddNew = () => {
-    setEditingProgram(null)
-    resetForm()
-    setIsModalOpen(true)
-  }
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false)
-    setEditingProgram(null)
-    resetForm()
-    setTimeConflict(null)
-  }
-
-  const handlePreview = (program: Program) => {
-    setPreviewProgram(program)
-    setIsPreviewOpen(true)
-  }
-
-  const closePreview = () => {
+  const handleClosePreview = () => {
     setIsPreviewOpen(false)
-    setPreviewProgram(null)
+    setPreviewSchedule(null)
   }
 
   return (
@@ -182,98 +263,133 @@ const ScheduleManagement = () => {
       title="Gestão de Programação"
       subtitle="Gerencie a programação da rádio, horários e apresentadores"
       showAddButton={true}
-      onAddClick={handleAddNew}
+      onAddClick={openCreateModal}
       addButtonLabel="Novo Programa"
     >
-      {/* Programs Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {programs.map((program, index) => (
-          <Card
-            key={program.id}
-            delay={index * 0.1}
-            hover={true}
-            className="p-6"
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-metal-accent to-blue-600 rounded-lg flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-white" />
+      {loading ? (
+        <div className="flex justify-center items-center h-full">
+          <Loader2 className="w-12 h-12 text-metal-accent animate-spin" />
+        </div>
+      ) : error ? (
+        <div className="flex justify-center items-center h-full text-red-500">
+          <AlertTriangle className="w-12 h-12 mr-2" />
+          <span>{error}</span>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {Array.isArray(schedules) && schedules.map((schedule, index) => (
+            <Card
+              key={schedule.id}
+              delay={index * 0.1}
+              hover={true}
+              className="p-6"
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-metal-accent to-blue-600 rounded-lg flex items-center justify-center">
+                    <Calendar className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{schedule.title}</h3>
+                    <p className="text-sm text-gray-600">{schedule.type}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-metal-text">{program.title}</h3>
-                  <p className="text-sm text-metal-text-secondary">{program.genre}</p>
-                </div>
+                {schedule.isActive && (
+                  <div className="flex items-center gap-1 px-2 py-1 bg-green-500/10 border border-green-500/30 rounded-full">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-xs text-green-400 font-medium">ATIVO</span>
+                  </div>
+                )}
               </div>
-              {program.isLive && (
-                <div className="flex items-center gap-1 px-2 py-1 bg-red-500/10 border border-red-500/30 rounded-full">
-                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                  <span className="text-xs text-red-400 font-medium">AO VIVO</span>
-                </div>
-              )}
-            </div>
 
-            <p className="text-sm text-metal-text-secondary mb-4 line-clamp-2">
-              {program.description}
-            </p>
+              <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                {schedule.description}
+              </p>
 
-            <div className="space-y-3 mb-4">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-metal-text-secondary">Horário:</span>
-                <span className="font-medium">
-                  {formatTime(program.startTime)} - {formatTime(program.endTime)}
-                </span>
-              </div>
-              
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-metal-text-secondary">Apresentador:</span>
-                <span className="font-medium">{program.host}</span>
-              </div>
-              
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-metal-text-secondary">Ouvintes:</span>
-                <div className="flex items-center gap-1">
-                  <Users className="w-4 h-4" />
-                  <span className="font-medium">{program.listeners}</span>
+              <div className="space-y-3 mb-4">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Data:</span>
+                  <span className="font-medium">
+                    {formatDate(schedule.startDate)} - {formatDate(schedule.endDate)}
+                  </span>
+                </div>
+                
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Horário:</span>
+                  <span className="font-medium">
+                    {formatTime(schedule.startTime)} - {formatTime(schedule.endTime)}
+                  </span>
+                </div>
+                
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Local:</span>
+                  <span className="font-medium">{schedule.location}</span>
+                </div>
+
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Apresentador:</span>
+                  <span className="font-medium">{schedule.host}</span>
+                </div>
+                
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Gênero:</span>
+                  <span className="font-medium">{schedule.genre}</span>
+                </div>
+
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Ouvintes:</span>
+                  <div className="flex items-center gap-1">
+                    <Users className="w-4 h-4" />
+                    <span className="font-medium">{schedule.currentAttendees} / {schedule.maxAttendees}</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="flex gap-2">
-              <motion.button
-                onClick={() => handleEdit(program)}
-                className="btn-secondary flex-1 flex items-center justify-center gap-2 text-sm"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Edit className="w-4 h-4" />
-                Editar
-              </motion.button>
-              <motion.button
-                onClick={() => handleDelete(program.id)}
-                className="btn-danger flex items-center justify-center gap-2 text-sm px-3"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Trash2 className="w-4 h-4" />
-              </motion.button>
-              <motion.button
-                onClick={() => handlePreview(program)}
-                className="bg-blue-500 text-white px-2 py-1 rounded ml-2"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                Visualizar como usuário
-              </motion.button>
-            </div>
-          </Card>
-        ))}
-      </div>
+              <div className="flex gap-2">
+                <motion.button
+                  onClick={() => handleEdit(schedule)}
+                  className="btn-secondary flex-1 flex items-center justify-center gap-2 text-sm"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Edit className="w-4 h-4" />
+                  Editar
+                </motion.button>
+                <motion.button
+                  onClick={() => handleDelete(schedule.id)}
+                  className="btn-danger flex items-center justify-center gap-2 text-sm px-3"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </motion.button>
+                <motion.button
+                  onClick={() => handleToggleStatus(schedule.id)}
+                  className="btn-info flex items-center justify-center gap-2 text-sm px-3"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {schedule.isActive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </motion.button>
+                <motion.button
+                  onClick={() => handlePreview(schedule)}
+                  className="bg-blue-500 text-white px-2 py-1 rounded ml-2"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Visualizar como usuário
+                </motion.button>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* Add/Edit Modal */}
       <Modal
         isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        title={editingProgram ? 'Editar Programa' : 'Novo Programa'}
+        onClose={closeModal}
+        title={editingSchedule ? 'Editar Programa' : 'Novo Programa'}
         size="lg"
       >
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -322,6 +438,28 @@ const ScheduleManagement = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
+              <label className="form-label">Data de Início</label>
+              <input
+                type="date"
+                value={formData.startDate}
+                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                className="form-input"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="form-label">Data de Fim</label>
+              <input
+                type="date"
+                value={formData.endDate}
+                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                className="form-input"
+                required
+              />
+            </div>
+            
+            <div>
               <label className="form-label">Horário de Início</label>
               <input
                 type="time"
@@ -331,29 +469,56 @@ const ScheduleManagement = () => {
                 required
               />
             </div>
-            
-            <div>
-              <label className="form-label">Horário de Fim</label>
-              <input
-                type="time"
-                value={formData.endTime}
-                onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-                className="form-input"
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="form-label">Apresentador</label>
-              <input
-                type="text"
-                value={formData.host}
-                onChange={(e) => setFormData({ ...formData, host: e.target.value })}
-                className="form-input"
-                placeholder="Nome do apresentador"
-                required
-              />
-            </div>
+          </div>
+
+          <div>
+            <label className="form-label">Horário de Fim</label>
+            <input
+              type="time"
+              value={formData.endTime}
+              onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+              className="form-input"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Local</label>
+            <input
+              type="text"
+              value={formData.location}
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              className="form-input"
+              placeholder="Ex: Sala Principal, Auditório"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Tipo de Evento</label>
+            <select
+              value={formData.type}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value as 'show' | 'event' | 'interview' | 'special' })}
+              className="form-select"
+              required
+            >
+              <option value="show">Show</option>
+              <option value="event">Evento</option>
+              <option value="interview">Entrevista</option>
+              <option value="special">Especial</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="form-label">Apresentador</label>
+            <input
+              type="text"
+              value={formData.host}
+              onChange={(e) => setFormData({ ...formData, host: e.target.value })}
+              className="form-input"
+              placeholder="Nome do apresentador"
+              required
+            />
           </div>
 
           <div>
@@ -370,34 +535,36 @@ const ScheduleManagement = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="form-label">Ouvintes Atuais</label>
+              <label className="form-label">Máximo de Ouvintes</label>
               <input
-                type="text"
-                value={formData.listeners}
-                onChange={(e) => setFormData({ ...formData, listeners: e.target.value })}
+                type="number"
+                value={formData.maxAttendees}
+                onChange={(e) => setFormData({ ...formData, maxAttendees: parseInt(e.target.value) || 0 })}
                 className="form-input"
-                placeholder="Ex: 1.2K"
+                placeholder="Ex: 100"
+                min="1"
+                max="1000"
               />
             </div>
             
             <div className="flex items-center gap-3">
               <input
                 type="checkbox"
-                id="isLive"
-                checked={formData.isLive}
-                onChange={(e) => setFormData({ ...formData, isLive: e.target.checked })}
+                id="isActive"
+                checked={formData.isActive}
+                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                 className="form-checkbox"
               />
-              <label htmlFor="isLive" className="text-sm text-metal-text-secondary">
-                Programa ao Vivo
+              <label htmlFor="isActive" className="text-sm text-gray-600">
+                Evento Ativo
               </label>
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-metal-border">
+                      <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
             <button
               type="button"
-              onClick={handleCloseModal}
+              onClick={closeModal}
               className="btn-secondary"
             >
               Cancelar
@@ -412,27 +579,30 @@ const ScheduleManagement = () => {
               ) : (
                 <Save className="w-4 h-4" />
               )}
-              {saving ? 'Salvando...' : (editingProgram ? 'Atualizar' : 'Criar')}
+              {saving ? 'Salvando...' : (editingSchedule ? 'Atualizar' : 'Criar')}
             </button>
           </div>
         </form>
       </Modal>
 
       {/* Modal de preview */}
-      <Modal isOpen={isPreviewOpen} onClose={closePreview} title="Visualização do Usuário">
-        {previewProgram && (
+      <Modal isOpen={isPreviewOpen} onClose={handleClosePreview} title="Visualização do Usuário">
+        {previewSchedule && (
           <div className="flex flex-col items-center p-4">
-            <h2 className="text-xl font-bold mb-2">{previewProgram.title}</h2>
-            <span className="text-sm text-gray-500 mb-1">{previewProgram.genre}</span>
-            <p className="mb-2 text-center">{previewProgram.description}</p>
+            <h2 className="text-xl font-bold mb-2">{previewSchedule.title}</h2>
+            <span className="text-sm text-gray-500 mb-1">{previewSchedule.type}</span>
+            <p className="mb-2 text-center">{previewSchedule.description}</p>
             <div className="flex gap-4 mb-2">
-              <span><Clock size={18}/> {previewProgram.startTime} - {previewProgram.endTime}</span>
-              <span><Users size={18}/> {previewProgram.listeners} ouvintes</span>
-              {previewProgram.isLive && (
-                <span className="bg-red-300 text-red-900 px-2 py-1 rounded">Ao vivo</span>
+              <span><Calendar size={18}/> {formatDate(previewSchedule.startDate)} - {formatDate(previewSchedule.endDate)}</span>
+              <span><Clock size={18}/> {formatTime(previewSchedule.startTime)} - {formatTime(previewSchedule.endTime)}</span>
+              <span><Users size={18}/> {previewSchedule.currentAttendees} / {previewSchedule.maxAttendees} ouvintes</span>
+              {previewSchedule.isActive && (
+                <span className="bg-green-300 text-green-900 px-2 py-1 rounded">Ativo</span>
               )}
             </div>
-            <span className="text-sm text-gray-500">Host: {previewProgram.host}</span>
+            <span className="text-sm text-gray-500">Local: {previewSchedule.location}</span>
+            <span className="text-sm text-gray-500">Apresentador: {previewSchedule.host}</span>
+            <span className="text-sm text-gray-500">Gênero: {previewSchedule.genre}</span>
           </div>
         )}
       </Modal>

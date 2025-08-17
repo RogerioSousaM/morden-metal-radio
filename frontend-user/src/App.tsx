@@ -18,7 +18,7 @@ const MainSite = () => {
         transition={{ duration: 0.8 }}
       >
         <Header />
-        <main>
+        <main id="main-content">
           <Hero />
           <ProgramGrid />
           <Filmaço />

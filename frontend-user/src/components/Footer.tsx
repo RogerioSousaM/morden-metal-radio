@@ -1,8 +1,9 @@
 import { motion } from 'framer-motion'
 import { Radio, Instagram, Twitter, Youtube, Music } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { apiService } from '../services/api'
 
-interface SocialLinks {
+interface SocialLinksData {
   instagram: string
   youtube: string
   twitter: string
@@ -10,7 +11,7 @@ interface SocialLinks {
 }
 
 const Footer = () => {
-  const [socialLinks, setSocialLinks] = useState<SocialLinks>({
+  const [socialLinks, setSocialLinks] = useState<SocialLinksData>({
     instagram: '',
     youtube: '',
     twitter: '',
@@ -20,11 +21,8 @@ const Footer = () => {
   useEffect(() => {
     const loadSocialLinks = async () => {
       try {
-        const response = await fetch('/api/social-links')
-        if (response.ok) {
-          const data = await response.json()
-          setSocialLinks(data)
-        }
+        const data = await apiService.getSocialLinks()
+        setSocialLinks(data)
       } catch (error) {
         console.error('Erro ao carregar links sociais:', error)
       }
@@ -53,10 +51,10 @@ const Footer = () => {
           >
             <Radio className="w-8 h-8 text-metal-orange" />
             <div>
-              <h3 className="text-xl font-bold text-metal-text tracking-widest uppercase">
+              <h3 className="heading-6 text-metal-text">
                 Morden Metal
               </h3>
-              <p className="text-metal-text-secondary text-sm">
+              <p className="text-caption text-metal-text-secondary">
                 Rádio online 24h
               </p>
             </div>
@@ -83,8 +81,9 @@ const Footer = () => {
                   transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
                   whileHover={{ scale: 1.1, y: -2 }}
                   whileTap={{ scale: 0.95 }}
+                  aria-label={`Visitar ${social.label}`}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-5 h-5 footer-social-icon" />
                 </motion.a>
               )
             })}
@@ -98,7 +97,7 @@ const Footer = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.6 }}
         >
-          <p className="text-metal-text-secondary text-sm">
+          <p className="footer-copyright">
             © 2024 Morden Metal. Todos os direitos reservados.
           </p>
         </motion.div>

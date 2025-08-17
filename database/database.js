@@ -17,6 +17,14 @@ class Database {
           reject(err)
         } else {
           console.log('✅ Conectado ao banco SQLite')
+          
+          // Configurações para melhor concorrência
+          this.db.configure('busyTimeout', 30000) // 30 segundos timeout
+          this.db.run('PRAGMA journal_mode = WAL') // Write-Ahead Logging
+          this.db.run('PRAGMA synchronous = NORMAL') // Sincronização otimizada
+          this.db.run('PRAGMA cache_size = 10000') // Cache aumentado
+          this.db.run('PRAGMA temp_store = MEMORY') // Armazenamento temporário em memória
+          
           this.createTables()
             .then(() => this.seedData())
             .then(() => resolve())
@@ -106,6 +114,29 @@ class Database {
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )`,
 
+      // Tabela de banners publicitários
+      `CREATE TABLE IF NOT EXISTS banners (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        image_url TEXT NOT NULL,
+        target_url TEXT,
+        start_at DATETIME NOT NULL,
+        end_at DATETIME NOT NULL,
+        priority INTEGER DEFAULT 1,
+        locations TEXT NOT NULL, -- JSON: ['hero', 'sidebar', 'footer']
+        active BOOLEAN DEFAULT 1,
+        impressions INTEGER DEFAULT 0,
+        clicks INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )`,
+      
+      // Índices para banners
+      `CREATE INDEX IF NOT EXISTS idx_banners_active ON banners(active)`,
+      `CREATE INDEX IF NOT EXISTS idx_banners_dates ON banners(start_at, end_at)`,
+      `CREATE INDEX IF NOT EXISTS idx_banners_priority ON banners(priority)`,
+      `CREATE INDEX IF NOT EXISTS idx_banners_locations ON banners(locations)`,
+
       // Tabela de estatísticas
       `CREATE TABLE IF NOT EXISTS stats (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -183,13 +214,22 @@ class Database {
   // Executar query com parâmetros
   run(sql, params = []) {
     return new Promise((resolve, reject) => {
-      this.db.run(sql, params, function(err) {
-        if (err) {
-          reject(err)
-        } else {
-          resolve({ id: this.lastID, changes: this.changes })
-        }
-      })
+      const executeQuery = (attempt = 1) => {
+        this.db.run(sql, params, function(err) {
+          if (err) {
+            if (err.code === 'SQLITE_BUSY' && attempt < 3) {
+              // Aguardar antes de tentar novamente
+              setTimeout(() => executeQuery(attempt + 1), 100 * attempt)
+              return
+            }
+            reject(err)
+          } else {
+            resolve({ id: this.lastID, changes: this.changes })
+          }
+        })
+      }
+      
+      executeQuery()
     })
   }
 

@@ -1,12 +1,15 @@
 # Dependencies
 node_modules/
-*/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-# Build outputs
+# Production builds
 dist/
 build/
-*/dist/
-*/build/
+.next/
+out/
 
 # Environment variables
 .env
@@ -15,15 +18,19 @@ build/
 .env.test.local
 .env.production.local
 
+# Database files
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
 # Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-.pnpm-debug.log*
+logs/
+*.log
 
 # Runtime data
-pids
+pids/
 *.pid
 *.seed
 *.pid.lock
@@ -43,6 +50,9 @@ jspm_packages/
 
 # Optional eslint cache
 .eslintcache
+
+# Optional stylelint cache
+.stylelintcache
 
 # Microbundle cache
 .rpt2_cache/
@@ -68,6 +78,7 @@ jspm_packages/
 
 # Nuxt.js build / generate output
 .nuxt
+dist
 
 # Gatsby files
 .cache/
@@ -82,58 +93,40 @@ tmp/
 temp/
 
 # Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
 # OS generated files
-Thumbs.db
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
 ehthumbs.db
+Thumbs.db
+
+# Tailwind CSS
+.tailwindcss-manifest.css
 
 # Vite
 .vite/
 
-# Test files (removendo todos os arquivos de teste)
-test-*.js
-test-*.ts
-test-*.tsx
-*test*.js
-*test*.ts
-*test*.tsx
-test/
-tests/
-__tests__/
-
-# Validation and test reports
-*validation*.json
-*validation*.md
-*test*.md
-*TEST*.md
-*CORRECOES*.md
-*RESUMO*.md
-*GUIA*.md
-*FUNCOES*.md
-*UPLOAD*.md
-*IMPLEMENTATION*.md
-
-# Batch files (Windows)
-*.bat
-
-# Database files
-*.db
-*.sqlite
-*.sqlite3
+# Testing
+coverage/
+.nyc_output/
 
 # Backup files
 *.bak
 *.backup
+*.old
 
-# Temporary files
-*.tmp
-*.temp 
+# Database backups
+backup/
+*.sql.bak
+
+# Uploads (development)
+uploads/
+temp/ 
