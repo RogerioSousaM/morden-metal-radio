@@ -2,10 +2,6 @@
 
 **Site de rádio online e portal de notícias focado em metal moderno**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
-[![React](https://img.shields.io/badge/React-18+-blue.svg)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5+-blue.svg)](https://www.typescriptlang.org/)
 
 ## 🚀 Sobre o Projeto
 
@@ -190,35 +186,3 @@ cd frontend-admin && npm test
 - [Typography System](./TYPOGRAPHY_SYSTEM.md)
 - [Design System](./frontend-user/METALCORE_AESTHETIC.md)
 - [Component Guidelines](./frontend-user/COMPONENT_SPECIFIC_SYSTEM.md)
-
-## 🤝 Contribuindo
-
-1. Fork o projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
-
-## 📄 Licença
-
-Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
-
-## 👥 Autores
-
-- **Rogério Sousa** - [GitHub](https://github.com/RogerioSousaM)
-
-## 🙏 Agradecimentos
-
-- Comunidade metal brasileira
-- Contribuidores open source
-- Inspiração em plataformas de música independente
-
-## 📞 Suporte
-
-- **Issues**: [GitHub Issues](https://github.com/RogerioSousaM/morden-metal-radio/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/RogerioSousaM/morden-metal-radio/discussions)
-- **Email**: [Seu email aqui]
-
----
-
-**🎸 Metal nunca morre, apenas evolui! 🤘**
