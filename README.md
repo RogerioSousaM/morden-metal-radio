@@ -1,7 +1,13 @@
-# 🎸 Morden Metal Radio
+#  Morden Metal Radio
 
-**Plataforma completa de rádio online especializada em metal moderno**
+## 🚧 Status do Projeto
 
+> **⚠️ ATENÇÃO: Este projeto está em desenvolvimento ativo!**
+
+### **📊 Estado Atual:**
+- **Status**: 🚧 **Em Desenvolvimento Ativo**
+- **Última Atualização**: 25/08/2025
+- **Próximas Funcionalidades**: Sistema de streaming, chat ao vivo, integração com redes sociais
 
 ## 🚀 Visão Geral
 
@@ -202,7 +208,33 @@ npm run dev
 - **Code Splitting** com Vite
 - **CDN Ready** para produção
 
+## 🚧 Desenvolvimento Ativo
 
+### **📈 Próximas Funcionalidades**
+- **Sistema de Streaming**: Implementação de streaming de áudio em tempo real
+- **Chat ao Vivo**: Chat interativo para ouvintes durante transmissões
+- **Integração com APIs**: Spotify, YouTube Music, Last.fm
+- **Notificações Push**: Alertas para novos programas e eventos
+- **Mobile App**: Aplicativo nativo para iOS e Android
+- **Analytics Avançados**: Métricas detalhadas de audiência
+
+### **🔧 Tecnologias em Estudo**
+- **WebRTC** para streaming de baixa latência
+- **Socket.io** para comunicação em tempo real
+- **Redis** para cache e sessões
+- **Docker** para containerização
+- **CI/CD** com GitHub Actions
+
+### **📋 Sprint Atual**
+- **Objetivo**: Sistema de streaming básico
+- **Prazo**: Fevereiro 2025
+- **Tarefas**: 
+  - [ ] Configuração do servidor de streaming
+  - [ ] Interface de controle de áudio
+  - [ ] Sistema de playlists
+  - [ ] Testes de performance
+
+---
 
 ## 📖 Documentação
 
@@ -211,7 +243,34 @@ npm run dev
 - [Database Status](./database/DATABASE_STATUS.md) - Status do banco
 - [Database Setup](./database/DATABASE.md) - Configuração do banco
 
+## 🤝 Contribuindo
 
+> **🎯 Este projeto está em desenvolvimento ativo e aceita contribuições!**
+
+### **💡 Como Contribuir:**
+1. **Fork** o projeto
+2. **Crie** uma branch para sua feature (`git checkout -b feature/NovaFuncionalidade`)
+3. **Desenvolva** seguindo os padrões do projeto
+4. **Teste** suas mudanças
+5. **Commit** suas alterações (`git commit -m 'Adiciona nova funcionalidade'`)
+6. **Push** para a branch (`git push origin feature/NovaFuncionalidade`)
+7. **Abra** um Pull Request
+
+### **🚀 Áreas que Precisam de Ajuda:**
+- **Frontend**: Melhorias na interface e UX
+- **Backend**: Otimizações de performance
+- **Streaming**: Implementação de funcionalidades de rádio
+- **Testes**: Cobertura de testes e testes E2E
+- **Documentação**: Melhorias na documentação técnica
+- **DevOps**: CI/CD e deploy automatizado
+
+### **📋 Padrões do Projeto:**
+- **Commits**: Usar português brasileiro
+- **Código**: Seguir padrões ESLint e Prettier
+- **Testes**: Manter cobertura acima de 80%
+- **Documentação**: Atualizar README e docs quando necessário
+
+---
 
 ## 👥 Autor
 
