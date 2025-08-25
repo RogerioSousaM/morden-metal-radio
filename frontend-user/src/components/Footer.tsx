@@ -1,104 +1,104 @@
 import { motion } from 'framer-motion'
-import { Radio, Instagram, Twitter, Youtube, Music } from 'lucide-react'
-import { useState, useEffect } from 'react'
-import { apiService } from '../services/api'
-
-interface SocialLinksData {
-  instagram: string
-  youtube: string
-  twitter: string
-  tiktok: string
-}
+import { Music, Heart, Volume2 } from 'lucide-react'
 
 const Footer = () => {
-  const [socialLinks, setSocialLinks] = useState<SocialLinksData>({
-    instagram: '',
-    youtube: '',
-    twitter: '',
-    tiktok: ''
-  })
-
-  useEffect(() => {
-    const loadSocialLinks = async () => {
-      try {
-        const data = await apiService.getSocialLinks()
-        setSocialLinks(data)
-      } catch (error) {
-        console.error('Erro ao carregar links sociais:', error)
-      }
-    }
-
-    loadSocialLinks()
-  }, [])
-
-  const socialPlatforms = [
-    { icon: Instagram, href: socialLinks.instagram, label: 'Instagram' },
-    { icon: Youtube, href: socialLinks.youtube, label: 'YouTube' },
-    { icon: Twitter, href: socialLinks.twitter, label: 'Twitter' },
-    { icon: Music, href: socialLinks.tiktok, label: 'TikTok' }
-  ].filter(platform => platform.href) // Only show platforms with valid URLs
-
   return (
-    <footer className="bg-metal-gray/50 border-t border-metal-light-gray/30 mt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          {/* Logo */}
+    <footer className="footer">
+      <div className="container">
+        <div className="footer-content">
+          {/* About Section */}
           <motion.div 
-            className="flex items-center gap-3"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
+            className="footer-section"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
           >
-            <Radio className="w-8 h-8 text-metal-orange" />
-            <div>
-              <h3 className="heading-6 text-metal-text">
-                Morden Metal
-              </h3>
-              <p className="text-caption text-metal-text-secondary">
-                Rádio online 24h
-              </p>
-            </div>
+            <h3>Modern Metal</h3>
+            <p>
+              A rádio mais pesada do Brasil, trazendo 24 horas de metal ininterrupto. 
+              Do metalcore ao death metal, sempre com a melhor qualidade e seleção.
+            </p>
           </motion.div>
 
-          {/* Social Links */}
+          {/* Quick Links */}
           <motion.div 
-            className="flex items-center gap-4"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
+            className="footer-section"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
+            viewport={{ once: true }}
           >
-            {socialPlatforms.map((social, index) => {
-              const Icon = social.icon
-              return (
-                <motion.a
-                  key={social.label}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-metal-light-gray/50 rounded-lg flex items-center justify-center text-metal-text-secondary hover:text-metal-orange hover:bg-metal-light-gray transition-all duration-300"
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
-                  whileHover={{ scale: 1.1, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  aria-label={`Visitar ${social.label}`}
-                >
-                  <Icon className="w-5 h-5 footer-social-icon" />
-                </motion.a>
-              )
-            })}
+            <h3>Links Rápidos</h3>
+            <ul className="space-y-2">
+              <li>
+                <a href="/bandas" className="hover:text-primary transition-colors">
+                  Bandas da Cena
+                </a>
+              </li>
+              <li>
+                <a href="/programs" className="hover:text-primary transition-colors">
+                  Programação
+                </a>
+              </li>
+              <li>
+                <a href="/filmes" className="hover:text-primary transition-colors">
+                  Filmaço
+                </a>
+              </li>
+              <li>
+                <a href="#listen-live" className="hover:text-primary transition-colors">
+                  Ouvir ao Vivo
+                </a>
+              </li>
+            </ul>
+          </motion.div>
+
+          {/* Contact & Social */}
+          <motion.div 
+            className="footer-section"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            viewport={{ once: true }}
+          >
+            <h3>Conecte-se</h3>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Volume2 className="w-4 h-4 text-primary" />
+                <span>24/7 Ao Vivo</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Heart className="w-4 h-4 text-primary" />
+                <span>Feito com ❤️ para o Metal</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Music className="w-4 h-4 text-primary" />
+                <span>Música Sem Limites</span>
+              </div>
+            </div>
+            
+            <div className="mt-4">
+              <a 
+                href="mailto:contato@modernmetal.com.br" 
+                className="text-primary hover:text-primary-light transition-colors"
+              >
+                contato@modernmetal.com.br
+              </a>
+            </div>
           </motion.div>
         </div>
 
-        {/* Copyright */}
+        {/* Footer Bottom */}
         <motion.div 
-          className="text-center mt-6 pt-6 border-t border-metal-light-gray/30"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          className="footer-bottom"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.6 }}
+          viewport={{ once: true }}
         >
-          <p className="footer-copyright">
-            © 2024 Morden Metal. Todos os direitos reservados.
+          <p>
+            © 2024 Modern Metal. Todos os direitos reservados. 
           </p>
         </motion.div>
       </div>

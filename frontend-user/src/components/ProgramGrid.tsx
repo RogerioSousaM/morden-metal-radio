@@ -15,11 +15,11 @@ const ProgramGrid = () => {
     const loadPrograms = async () => {
       try {
         setLoading(true)
-        const apiPrograms = await apiService.getProgramasPublicos()
-        setPrograms(apiPrograms)
-      } catch (error) {
-        console.error('Erro ao carregar programas:', error)
-        // Fallback para dados estáticos em caso de erro
+        // Como não temos API para programas ainda, vamos usar dados estáticos
+        // const apiPrograms = await apiService.getProgramasPublicos()
+        // setPrograms(apiPrograms)
+        
+        // Dados estáticos para demonstração
         setPrograms([
           {
             id: 1,
@@ -30,7 +30,7 @@ const ProgramGrid = () => {
             host: 'DJ Shadow',
             listeners: '234',
             isLive: false,
-            genre: 'Classic Metal'
+            genre: 'Metalcore'
           },
           {
             id: 2,
@@ -67,7 +67,78 @@ const ProgramGrid = () => {
           },
           {
             id: 5,
-            title: 'Metal Core Revolution',
+            title: 'Modern Metal Revolution',
+            startTime: '18:00',
+            endTime: '22:00',
+            description: 'A nova geração do metal com breakdowns épicos',
+            host: 'DJ Core',
+            listeners: '1,234',
+            isLive: false,
+            genre: 'Metalcore'
+          },
+          {
+            id: 6,
+            title: 'Black Metal Nights',
+            startTime: '22:00',
+            endTime: '00:00',
+            description: 'Atmosfera sombria e riffs melódicos para a noite',
+            host: 'DJ Frost',
+            listeners: '456',
+            isLive: false,
+            genre: 'Black Metal'
+          }
+        ])
+      } catch (error) {
+        console.error('Erro ao carregar programas:', error)
+        // Fallback para dados estáticos em caso de erro
+        setPrograms([
+          {
+            id: 1,
+            title: 'Metal Noturno',
+            startTime: '00:00',
+            endTime: '06:00',
+            description: 'Os melhores clássicos do metal para acompanhar a madrugada',
+            host: 'DJ Shadow',
+            listeners: '234',
+            isLive: false,
+            genre: 'Metalcore'
+          },
+          {
+            id: 2,
+            title: 'Wake Up Metal',
+            startTime: '06:00',
+            endTime: '10:00',
+            description: 'Energia pura para começar o dia com força total',
+            host: 'DJ Thunder',
+            listeners: '567',
+            isLive: true,
+            genre: 'Power Metal'
+          },
+          {
+            id: 3,
+            title: 'Metal Industrial',
+            startTime: '10:00',
+            endTime: '14:00',
+            description: 'Sintetizadores e guitarras distorcidas em harmonia',
+            host: 'DJ Cyber',
+            listeners: '432',
+            isLive: false,
+            genre: 'Industrial Metal'
+          },
+          {
+            id: 4,
+            title: 'Death Metal Hour',
+            startTime: '14:00',
+            endTime: '18:00',
+            description: 'As bandas mais pesadas do cenário underground',
+            host: 'DJ Brutal',
+            listeners: '789',
+            isLive: false,
+            genre: 'Death Metal'
+          },
+          {
+            id: 5,
+            title: 'Modern Metal Revolution',
             startTime: '18:00',
             endTime: '22:00',
             description: 'A nova geração do metal com breakdowns épicos',
@@ -165,19 +236,19 @@ const ProgramGrid = () => {
   // Estado de loading
   if (loading) {
     return (
-      <section id="programacao" className="py-16 px-4 sm:px-6 lg:px-8 bg-metal-gray/30">
-        <div className="max-w-7xl mx-auto">
+      <section className="section section-content">
+        <div className="container">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-metal-text mb-4 tracking-widest uppercase">
+            <h2 className="heading-2 text-center mb-4">
               Programação
             </h2>
-            <p className="text-xl text-metal-text-secondary max-w-2xl mx-auto">
+            <p className="text-body-large text-center text-secondary max-w-2xl mx-auto">
               Confira nossa grade completa de 24 horas de metal ininterrupto
             </p>
           </div>
           
           <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-crimson"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
         </div>
       </section>
@@ -185,8 +256,8 @@ const ProgramGrid = () => {
   }
 
   return (
-    <section id="programacao" className="py-16 px-4 sm:px-6 lg:px-8 bg-metal-gray/30">
-      <div className="max-w-7xl mx-auto">
+    <section className="section section-content">
+      <div className="container">
         {/* Section Header */}
         <motion.div 
           className="text-center mb-12"
@@ -195,20 +266,20 @@ const ProgramGrid = () => {
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-metal-text mb-4 tracking-widest uppercase">
+          <h2 className="heading-2 text-center mb-4">
             Programação
           </h2>
-          <p className="text-xl text-metal-text-secondary max-w-2xl mx-auto">
+          <p className="text-body-large text-center text-secondary max-w-2xl mx-auto">
             Confira nossa grade completa de 24 horas de metal ininterrupto
           </p>
         </motion.div>
 
         {/* Program Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="card-grid">
           {programs.map((program, index) => (
             <motion.div
               key={program.id}
-              className={`card card-compact group ${program.isLive ? 'live' : ''}`}
+              className={`program-card ${program.isLive ? 'live' : ''}`}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ 
@@ -220,61 +291,58 @@ const ProgramGrid = () => {
             >
               {/* Live Indicator */}
               {program.isLive && (
-                <div className="absolute top-4 right-4 z-10">
-                  <div className="live-indicator">
-                    <div className="live-dot"></div>
-                    <span className="text-xs font-bold">AO VIVO</span>
-                  </div>
+                <div className="live-indicator">
+                  <div className="live-dot"></div>
+                  <span className="text-xs font-bold">AO VIVO</span>
                 </div>
               )}
 
               {/* Time */}
-              <div className="flex items-center gap-2 mb-2">
-                <Clock className="w-4 h-4 text-accent-crimson" />
-                <span className="text-sm font-mono text-accent-crimson">
+              <div className="program-time">
+                <Clock className="w-4 h-4" />
+                <span className="font-mono">
                   {program.startTime} - {program.endTime}
                 </span>
               </div>
 
               {/* Title */}
-              <h3 className="text-xl font-bold text-metal-text mb-2 group-hover:text-accent-crimson transition-colors">
+              <h3 className="program-title">
                 {program.title}
               </h3>
 
               {/* Description */}
-              <p className="text-metal-text-secondary text-sm mb-4 leading-relaxed">
+              <p className="program-description">
                 {program.description}
               </p>
 
-              {/* Host */}
-              <div className="flex items-center gap-2 mb-3">
-                <Users className="w-4 h-4 text-metal-text-secondary" />
-                <span className="text-sm text-metal-text-secondary">
-                  Apresentado por <span className="text-accent-crimson font-medium">{program.host}</span>
-                </span>
+              {/* Meta Information */}
+              <div className="program-meta">
+                {/* Host */}
+                <div className="program-meta-item">
+                  <Users className="icon" />
+                  <span>
+                    Apresentado por <span className="text-primary font-medium">{program.host}</span>
+                  </span>
+                </div>
+
+                {/* Genre */}
+                <div className="program-meta-item">
+                  <Music className="icon" />
+                  <span>{program.genre}</span>
+                </div>
+
+                {/* Listeners */}
+                <div className="program-meta-item">
+                  <Heart className="icon" />
+                  <span>{program.listeners} ouvintes</span>
+                </div>
               </div>
 
-              {/* Genre */}
-              <div className="flex items-center gap-2 mb-4">
-                <Music className="w-4 h-4 text-metal-text-secondary" />
-                <span className="text-sm text-metal-text-secondary">
-                  {program.genre}
-                </span>
-              </div>
-
-              {/* Listeners */}
-              <div className="flex items-center gap-2 mb-4">
-                <Heart className="w-4 h-4 text-accent-crimson" />
-                <span className="text-sm text-metal-text-secondary">
-                  {program.listeners} ouvintes
-                </span>
-              </div>
-
-              {/* Action Buttons Container */}
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-auto">
+              {/* Action Buttons */}
+              <div className="program-actions">
                 {/* Play Button */}
                 <motion.button
-                  className="inline-flex items-center justify-center px-3 py-2 rounded-md bg-accent-crimson text-white text-sm font-medium hover:bg-accent-crimson/90 transition-colors min-w-[80px] whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-accent-crimson focus:ring-offset-2 focus:ring-offset-metal-dark disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="btn btn-primary"
                   whileHover={shouldReduceMotion() ? {} : { scale: 1.05 }}
                   whileTap={shouldReduceMotion() ? {} : { scale: 0.95 }}
                   aria-label={`Ouvir programa ${program.title}`}
@@ -284,7 +352,7 @@ const ProgramGrid = () => {
                   {playingProgram === program.id ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                   ) : (
-                    <Play className="w-4 h-4 mr-1" />
+                    <Play className="w-4 h-4" />
                   )}
                   <span className="hidden sm:inline">
                     {playingProgram === program.id ? 'Carregando...' : 'Ouvir'}
@@ -293,19 +361,19 @@ const ProgramGrid = () => {
 
                 {/* Details Button */}
                 <motion.button
-                  className="inline-flex items-center justify-center px-3 py-2 rounded-md bg-transparent text-accent-crimson border border-accent-crimson text-sm font-medium hover:bg-accent-crimson/10 transition-colors min-w-[80px] whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-accent-crimson focus:ring-offset-2 focus:ring-offset-metal-dark"
+                  className="btn btn-secondary"
                   whileHover={shouldReduceMotion() ? {} : { scale: 1.05 }}
                   whileTap={shouldReduceMotion() ? {} : { scale: 0.95 }}
                   aria-label={`Ver detalhes do programa ${program.title}`}
                   onClick={() => handleProgramDetails(program.id)}
                 >
-                  <Info className="w-4 h-4 mr-1" />
+                  <Info className="w-4 h-4" />
                   <span className="hidden sm:inline">Detalhes</span>
                 </motion.button>
 
                 {/* Request Button */}
                 <motion.button
-                  className="inline-flex items-center justify-center px-3 py-2 rounded-md bg-transparent text-accent-amber border border-accent-amber text-sm font-medium hover:bg-accent-amber/10 transition-colors min-w-[80px] whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-accent-amber focus:ring-offset-2 focus:ring-offset-metal-dark disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="btn btn-outline"
                   whileHover={shouldReduceMotion() ? {} : { scale: 1.05 }}
                   whileTap={shouldReduceMotion() ? {} : { scale: 0.95 }}
                   aria-label={`Solicitar música para o programa ${program.title}`}
@@ -313,9 +381,9 @@ const ProgramGrid = () => {
                   disabled={requestingProgram === program.id}
                 >
                   {requestingProgram === program.id ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-accent-amber"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-secondary"></div>
                   ) : (
-                    <Calendar className="w-4 h-4 mr-1" />
+                    <Calendar className="w-4 h-4" />
                   )}
                   <span className="hidden sm:inline">
                     {requestingProgram === program.id ? 'Enviando...' : 'Solicitar'}
@@ -335,7 +403,7 @@ const ProgramGrid = () => {
           viewport={{ once: true }}
         >
           <motion.button 
-            className="btn-secondary flex items-center gap-3 mx-auto"
+            className="btn btn-secondary btn-lg"
             whileHover={shouldReduceMotion() ? {} : { scale: 1.05 }}
             whileTap={shouldReduceMotion() ? {} : { scale: 0.95 }}
           >

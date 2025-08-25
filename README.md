@@ -1,224 +1,218 @@
 # 🎸 Morden Metal Radio
 
-**Site de rádio online e portal de notícias focado em metal moderno**
+**Plataforma completa de rádio online especializada em metal moderno**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
-[![React](https://img.shields.io/badge/React-18+-blue.svg)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5+-blue.svg)](https://www.typescriptlang.org/)
 
-## 🚀 Sobre o Projeto
+## 🚀 Visão Geral
 
-Morden Metal Radio é uma plataforma completa de rádio online especializada em metal moderno, incluindo metalcore, djent, post-hardcore e outros subgêneros contemporâneos. O projeto oferece tanto um portal público para ouvintes quanto um painel administrativo completo para gestão de conteúdo.
+O projeto oferece uma experiência completa com portal público para ouvintes e painel administrativo robusto para gestão de conteúdo.
 
-## ✨ Características Principais
+## ✨ Funcionalidades Principais
 
 ### 🎵 **Portal Público (Frontend User)**
-- **Design System Metalcore**: Interface dark metal moderna com identidade visual única
-- **Galeria em Mosaico**: Exibição dinâmica de bandas da cena com efeitos visuais
-- **Programação ao Vivo**: Grid de programas com indicadores de status
+- **Landing Page Dinâmica**: Hero section com animações Framer Motion
+- **Galeria de Bandas**: Mosaico interativo das bandas da cena metal
+- **Programação ao Vivo**: Grid de programas com indicadores de status em tempo real
 - **Seção Filmaço**: Recomendações de filmes de terror e suspense
-- **Responsividade Total**: Otimizado para todos os dispositivos
-- **Acessibilidade**: Navegação por teclado e suporte a leitores de tela
+- **Navegação por Rotas**: Páginas dedicadas para cada seção
+- **Design Responsivo**: Interface otimizada para todos os dispositivos
+- **Sistema de Toast**: Notificações em tempo real
 
 ### 🛠️ **Painel Administrativo (Frontend Admin)**
-- **Gestão de Conteúdo**: CRUD completo para bandas, filmes, programas
-- **Upload de Arquivos**: Sistema de gerenciamento de mídia
-- **Dashboard Analytics**: Métricas e estatísticas em tempo real
+- **Dashboard Centralizado**: Visão geral do sistema
+- **Gestão de Bandas**: CRUD completo para bandas da cena
+- **Gestão de Filmes**: Catálogo de filmes com indicações do mês
+- **Controle de Programação**: Agendamento e gestão de horários
+- **Sistema de Banners**: Gestão de banners e carrosséis
+- **Upload de Arquivos**: Sistema avançado de gerenciamento de mídia
 - **Controle de Usuários**: Sistema de permissões e roles
-- **Interface Moderna**: Design consistente com o sistema metalcore
+- **Configurações**: Gestão de links sociais e configurações gerais
 
 ### 🔧 **Backend Robusto**
-- **API RESTful**: Endpoints bem documentados com OpenAPI
-- **Middleware de Segurança**: Autenticação, autorização e auditoria
-- **Sistema de Logs**: Rastreamento completo de ações administrativas
-- **Validação de Dados**: Schemas robustos e tratamento de erros
-- **Performance**: Otimizações de banco e cache
+- **API RESTful**: 13 endpoints principais organizados por funcionalidade
+- **Autenticação JWT**: Sistema seguro de login e autorização
+- **Middleware de Segurança**: Helmet, CORS, Rate Limiting
+- **Sistema de Auditoria**: Logs detalhados de todas as ações
+- **Upload de Arquivos**: Processamento de imagens com Sharp
+- **Validação de Dados**: Schemas robustos com express-validator
+- **Documentação OpenAPI**: Swagger UI integrado
 
-## 🏗️ Arquitetura
+## 🏗️ Arquitetura do Sistema
 
 ```
 morden-metal-radio/
-├── frontend-user/          # Portal público (React + TypeScript)
-├── frontend-admin/         # Painel administrativo (React + TypeScript)
+├── frontend-user/          # Portal público (React 18 + TS + Vite)
+│   ├── src/
+│   │   ├── components/     # Componentes principais
+│   │   ├── pages/          # Páginas dedicadas
+│   │   └── ui/             # Componentes de interface
+├── frontend-admin/         # Painel administrativo (React 18 + TS + Vite)
+│   ├── src/
+│   │   ├── components/     # Layouts e componentes admin
+│   │   ├── pages/          # Páginas de gestão
+│   │   └── ui/             # Componentes reutilizáveis
 ├── backend/                # API Node.js + Express
+│   ├── routes/             # 13 rotas principais
+│   ├── middleware/         # Auth, audit, security
+│   └── config/             # Configurações e uploads
 ├── database/               # Scripts SQLite e migrações
+│   ├── database.js         # Classe principal do banco
+│   └── scripts/            # Migrações e backups
 └── docs/                   # Documentação técnica
 ```
 
-## 🛠️ Tecnologias Utilizadas
+## 🛠️ Stack Tecnológica
 
-### Frontend
-- **React 18** com TypeScript
-- **Tailwind CSS** com sistema de design customizado
-- **Framer Motion** para animações
-- **Vite** para build e desenvolvimento
-- **Lucide React** para ícones
+### **Frontend**
+- **React 18.2** com TypeScript 5.0
+- **Vite 4.4** para build e desenvolvimento ultra-rápido
+- **Tailwind CSS 3.3** com sistema de design customizado
+- **Framer Motion 10.16** para animações fluidas
+- **React Router DOM 7.7** para navegação SPA
+- **Lucide React 0.263** para ícones consistentes
+- **Vitest 3.2** para testes unitários
 
-### Backend
-- **Node.js** com Express
-- **SQLite3** com configurações otimizadas
-- **JWT** para autenticação
-- **Multer** para upload de arquivos
-- **Jest** para testes
+### **Backend**
+- **Node.js 16+** com Express 4.18
+- **SQLite3 5.1** com configurações WAL otimizadas
+- **JWT 9.0** para autenticação segura
+- **Multer 1.4** para upload de arquivos
+- **Sharp 0.33** para processamento de imagens
+- **Helmet 7.1** para segurança HTTP
+- **Swagger 6.2** para documentação da API
+- **Jest 29.7** para testes
 
-### Design System
-- **Paleta Metalcore**: Cores escuras com acentos vermelho sangue
-- **Tipografia Orbitron**: Fonte display para títulos
-- **Sistema de Grid**: Layout responsivo e flexível
-- **Componentes Reutilizáveis**: Cards, botões e overlays padronizados
+### **Banco de Dados**
+- **SQLite3** com configurações de performance
+- **WAL Mode** para melhor concorrência
+- **Cache otimizado** para consultas rápidas
+- **Sistema de migrações** automatizado
+- **Backups automáticos** do banco
+
+## 🔌 Endpoints da API
+
+### **Conteúdo Principal**
+- `GET /api/bandas` - Lista de bandas da cena metal
+- `GET /api/filmes` - Catálogo de filmes com notas
+- `GET /api/programs` - Programação da rádio
+- `GET /api/schedule` - Horários e agendamentos
+- `GET /api/news` - Notícias e atualizações
+
+### **Administração**
+- `POST /api/auth/login` - Autenticação de usuários
+- `POST /api/upload` - Upload e processamento de arquivos
+- `GET /api/users` - Gestão de usuários e permissões
+- `POST /api/bandas` - CRUD completo de bandas
+- `POST /api/filmes` - CRUD completo de filmes
+
+### **Mídia e Conteúdo**
+- `GET /api/banners` - Gestão de banners promocionais
+- `GET /api/carousel` - Carrossel de imagens rotativo
+- `GET /api/destaques` - Conteúdo em destaque
+- `GET /api/highlights` - Destaques especiais
+- `GET /api/social-links` - Links para redes sociais
+- `GET /api/top-month` - Top do mês
 
 ## 🚀 Instalação e Configuração
 
-### Pré-requisitos
-- Node.js 18+ 
+### **Pré-requisitos**
+- Node.js 16+ 
 - npm ou yarn
 - Git
 
-### 1. Clone o repositório
+### **1. Clone o repositório**
 ```bash
 git clone https://github.com/RogerioSousaM/morden-metal-radio.git
 cd morden-metal-radio
 ```
 
-### 2. Instale as dependências
+### **2. Instalação completa**
 ```bash
-# Dependências principais
-npm install
-
-# Frontend User
-cd frontend-user && npm install
-
-# Frontend Admin  
-cd ../frontend-admin && npm install
-
-# Backend
-cd ../backend && npm install
-
-# Database
-cd ../database && npm install
+# Instala todas as dependências de uma vez
+npm run install:all
 ```
 
-### 3. Configure o banco de dados
+### **3. Configuração do banco**
 ```bash
 cd database
-npm run setup
-npm run seed
+npm run migrate    # Executa migrações
+npm run schema     # Verifica schema
 ```
 
-### 4. Configure as variáveis de ambiente
+### **4. Variáveis de ambiente**
 ```bash
 # Backend
 cp backend/.env.example backend/.env
-# Edite backend/.env com suas configurações
+# Configure suas variáveis no arquivo .env
 ```
 
-### 5. Execute o projeto
+### **5. Execução do projeto**
 ```bash
-# Terminal 1: Backend
-cd backend && npm run dev
-
-# Terminal 2: Frontend User
-cd frontend-user && npm run dev
-
-# Terminal 3: Frontend Admin
-cd frontend-admin && npm run dev
+# Executa todos os serviços simultaneamente
+npm run dev
 ```
 
 ## 📱 Como Usar
 
-### Portal Público
-- Acesse `http://localhost:5173` para o portal público
-- Navegue pelas seções: Bandas da Cena, Programação, Filmaço
-- Explore a galeria em mosaico das bandas
-- Verifique a programação ao vivo
+### **Portal Público**
+- **URL**: `http://localhost:5173`
+- **Seções**: Hero, Programação, Filmaço, Bandas da Cena
+- **Navegação**: Rotas dedicadas para cada seção
+- **Responsivo**: Otimizado para mobile e desktop
 
-### Painel Administrativo
-- Acesse `http://localhost:5174` para o painel admin
-- Faça login com credenciais de administrador
-- Gerencie conteúdo, usuários e configurações
-- Monitore logs e estatísticas
+### **Painel Administrativo**
+- **URL**: `http://localhost:5174`
+- **Login**: Credenciais de administrador
+- **Dashboard**: Visão geral do sistema
+- **Gestão**: CRUD completo de conteúdo
 
 ## 🎨 Sistema de Design
 
-### Paleta de Cores
-- **Metal Background**: `#000000` (Preto puro)
-- **Metal Surface**: `#0f0f10` (Superfície escura)
-- **Accent Crimson**: `#d32f2f` (Vermelho sangue)
-- **Accent Amber**: `#ffb300` (Âmbar metálico)
+### **Paleta de Cores**
+- **Background**: `#000000` (Preto puro)
+- **Surface**: `#0f0f10` (Superfície escura)
+- **Accent**: `#d32f2f` (Vermelho sangue)
+- **Secondary**: `#ffb300` (Âmbar metálico)
 
-### Tipografia
+### **Tipografia**
 - **Display**: Orbitron (Títulos e elementos hero)
 - **Body**: Inter (Texto e conteúdo)
 
-### Componentes
-- **Cards**: Sistema de cards com overlays e animações
-- **Botões**: Botões com estados hover e focus
-- **Grid**: Sistema de grid responsivo para galerias
-- **Overlays**: Efeitos visuais para imagens e mídia
+### **Componentes**
+- **Cards**: Sistema de cards com overlays
+- **Botões**: Estados hover e focus
+- **Grid**: Layout responsivo para galerias
+- **Animações**: Transições suaves com Framer Motion
 
-## 🔒 Segurança
+## 🔒 Segurança e Performance
 
-- **Autenticação JWT** com refresh tokens
-- **Middleware de Auditoria** para todas as ações administrativas
-- **Validação de Entrada** com schemas robustos
-- **Sanitização de Dados** para prevenir injeções
-- **Rate Limiting** para proteção contra ataques
+### **Segurança**
+- **JWT Authentication** com refresh tokens
+- **Rate Limiting** configurado por endpoint
+- **Helmet** para headers de segurança
+- **CORS** configurado para origens confiáveis
+- **Validação** com express-validator
+- **Auditoria** completa de ações
 
-## 📊 Performance
+### **Performance**
+- **SQLite WAL Mode** para concorrência
+- **Cache otimizado** para consultas
+- **Compressão** de imagens com Sharp
+- **Lazy Loading** de componentes
+- **Code Splitting** com Vite
+- **CDN Ready** para produção
 
-- **Lazy Loading** de imagens e componentes
-- **Code Splitting** para otimização de bundles
-- **Cache de Banco** com configurações SQLite otimizadas
-- **Compressão** de assets estáticos
-- **CDN Ready** para deploy em produção
 
-## 🧪 Testes
 
-```bash
-# Testes do backend
-cd backend && npm test
+## 📖 Documentação
 
-# Testes do frontend
-cd frontend-user && npm test
-cd frontend-admin && npm test
-```
+- [API Documentation](./API_DOCUMENTATION.md) - Documentação completa da API
+- [Typography System](./TYPOGRAPHY_SYSTEM.md) - Sistema de tipografia
+- [Database Status](./database/DATABASE_STATUS.md) - Status do banco
+- [Database Setup](./database/DATABASE.md) - Configuração do banco
 
-## 📚 Documentação
 
-- [API Documentation](./API_DOCUMENTATION.md)
-- [Typography System](./TYPOGRAPHY_SYSTEM.md)
-- [Design System](./frontend-user/METALCORE_AESTHETIC.md)
-- [Component Guidelines](./frontend-user/COMPONENT_SPECIFIC_SYSTEM.md)
 
-## 🤝 Contribuindo
-
-1. Fork o projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
-
-## 📄 Licença
-
-Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
-
-## 👥 Autores
+## 👥 Autor
 
 - **Rogério Sousa** - [GitHub](https://github.com/RogerioSousaM)
-
-## 🙏 Agradecimentos
-
-- Comunidade metal brasileira
-- Contribuidores open source
-- Inspiração em plataformas de música independente
-
-## 📞 Suporte
-
-- **Issues**: [GitHub Issues](https://github.com/RogerioSousaM/morden-metal-radio/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/RogerioSousaM/morden-metal-radio/discussions)
-- **Email**: [Seu email aqui]
-
----
-
-**🎸 Metal nunca morre, apenas evolui! 🤘**

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react'
+
 import { 
   Plus, 
   Edit, 
@@ -224,10 +224,9 @@ const DestaquesManagement = () => {
         <ActionButton
           onClick={() => openModal()}
           className="bg-orange-500 hover:bg-orange-600"
-        >
-          <Plus className="w-4 h-4" />
-          Novo Destaque
-        </ActionButton>
+          icon={Plus}
+          label="Novo Destaque"
+        />
       </div>
 
       {/* Filtros */}
@@ -281,25 +280,22 @@ const DestaquesManagement = () => {
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
                 <ActionButton
                   onClick={() => openModal(destaque)}
-                  size="sm"
                   className="bg-metal-orange hover:bg-metal-orange/80"
-                >
-                  <Edit className="w-4 h-4" />
-                </ActionButton>
+                  icon={Edit}
+                  label="Editar"
+                />
                 <ActionButton
                   onClick={() => toggleStatus(destaque.id)}
-                  size="sm"
                   className={destaque.ativo ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}
-                >
-                  {destaque.ativo ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </ActionButton>
+                  icon={destaque.ativo ? EyeOff : Eye}
+                  label={destaque.ativo ? 'Desativar' : 'Ativar'}
+                />
                 <ActionButton
                   onClick={() => deleteDestaque(destaque.id)}
-                  size="sm"
                   className="bg-red-600 hover:bg-red-700"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </ActionButton>
+                  icon={Trash2}
+                  label="Excluir"
+                />
               </div>
             </div>
 
@@ -326,20 +322,18 @@ const DestaquesManagement = () => {
               <div className="flex items-center justify-center gap-2 pt-2 border-t border-gray-200">
                 <ActionButton
                   onClick={() => reorderDestaque(destaque.id, 'up')}
-                  size="sm"
                   className="bg-gray-100 hover:bg-gray-200"
                   disabled={destaque.ordem === 1}
-                >
-                  <ArrowUp className="w-4 h-4" />
-                </ActionButton>
+                  icon={ArrowUp}
+                  label="Subir"
+                />
                 <ActionButton
                   onClick={() => reorderDestaque(destaque.id, 'down')}
-                  size="sm"
                   className="bg-gray-100 hover:bg-gray-200"
                   disabled={destaque.ordem === destaques.length}
-                >
-                  <ArrowDown className="w-4 h-4" />
-                </ActionButton>
+                  icon={ArrowDown}
+                  label="Descer"
+                />
               </div>
             </div>
           </Card>
@@ -449,19 +443,16 @@ const DestaquesManagement = () => {
             {/* Botões */}
             <div className="flex gap-3 pt-4">
               <ActionButton
-                type="submit"
+                onClick={() => saveDestaque()}
                 className="bg-orange-500 hover:bg-orange-600 flex-1"
-              >
-                <Save className="w-4 h-4" />
-                {editingDestaque ? 'Atualizar' : 'Criar'}
-              </ActionButton>
+                icon={Save}
+                label={editingDestaque ? 'Atualizar' : 'Criar'}
+              />
               <ActionButton
-                type="button"
                 onClick={closeModal}
                 className="bg-gray-100 hover:bg-gray-200 flex-1"
-              >
-                Cancelar
-              </ActionButton>
+                label="Cancelar"
+              />
             </div>
           </form>
         </div>

@@ -1,263 +1,269 @@
-import { motion } from 'framer-motion'
+import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { 
-  Users, Calendar, FileText, 
-  Radio, Settings, Image,
-  ArrowUpRight, ArrowDownRight, Activity
+  Clock, 
+  Film, 
+  Music, 
+  TrendingUp, 
+  Users, 
+  Calendar,
+  Play,
+  Eye
 } from 'lucide-react'
-import PageLayout from '../components/PageLayout'
-import Card, { CardHeader, CardTitle, CardContent } from '../components/ui/Card'
 
-const Dashboard = () => {
-  const stats = [
-    {
-      title: 'Programas Ativos',
-      value: '8',
-      change: '+3%',
-      changeType: 'increase' as const,
-      icon: Calendar,
-      color: 'from-metal-accent to-blue-600'
-    },
-    {
-      title: 'Arquivos',
-      value: '156',
-      change: '+8%',
-      changeType: 'increase' as const,
-      icon: FileText,
-      color: 'from-metal-green to-green-600'
-    },
-    {
-      title: 'Usuários',
-      value: '1.2k',
-      change: '-2%',
-      changeType: 'decrease' as const,
-      icon: Users,
-      color: 'from-metal-blue to-blue-600'
-    },
-    {
-      title: 'Carrosséis',
-      value: '3',
-      change: '+1%',
-      changeType: 'increase' as const,
-      icon: Image,
-      color: 'from-metal-purple to-purple-600'
+interface DashboardStats {
+  totalPrograms: number
+  totalMovies: number
+  totalBands: number
+  activeUsers: number
+}
+
+const Dashboard: React.FC = () => {
+  const [stats, setStats] = useState<DashboardStats>({
+    totalPrograms: 0,
+    totalMovies: 0,
+    totalBands: 0,
+    activeUsers: 0
+  })
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    // Simulate loading stats
+    const loadStats = async () => {
+      setIsLoading(true)
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      setStats({
+        totalPrograms: 24,
+        totalMovies: 15,
+        totalBands: 32,
+        activeUsers: 128
+      })
+      setIsLoading(false)
     }
-  ]
+
+    loadStats()
+  }, [])
 
   const quickActions = [
     {
-      title: 'Programação',
-      description: 'Configurar horários e programas',
-      icon: Calendar,
-      href: '/admin/schedule',
-      color: 'bg-gradient-to-br from-metal-accent/20 to-blue-600/20'
+      title: 'Adicionar Programa',
+      description: 'Criar novo horário de programação',
+      icon: Clock,
+      path: '/admin/programs',
+      color: 'bg-blue-500'
     },
     {
-      title: 'Upload de Arquivos',
-      description: 'Fazer upload de músicas e documentos',
-      icon: FileText,
-      href: '/admin/files',
-      color: 'bg-gradient-to-br from-metal-green/20 to-green-600/20'
+      title: 'Adicionar Filme',
+      description: 'Cadastrar novo filme ou evento',
+      icon: Film,
+      path: '/admin/movies',
+      color: 'bg-purple-500'
     },
+    {
+      title: 'Adicionar Banda',
+      description: 'Cadastrar nova banda da cena',
+      icon: Music,
+      path: '/admin/bands',
+      color: 'bg-green-500'
+    }
   ]
 
   const recentActivity = [
     {
-      action: 'Programa atualizado',
-      target: 'Metal Show',
-      time: '15 minutos atrás',
-      type: 'update' as const
+      type: 'program',
+      title: 'Programa "Metal da Noite" atualizado',
+      time: '2 horas atrás',
+      icon: Clock
     },
     {
-      action: 'Arquivo removido',
-      target: 'musica_antiga.mp3',
-      time: '1 hora atrás',
-      type: 'delete' as const
+      type: 'movie',
+      title: 'Filme "Terrifier 3" adicionado',
+      time: '4 horas atrás',
+      icon: Film
     },
     {
-      action: 'Usuário adicionado',
-      target: 'Novo Admin',
-      time: '3 horas atrás',
-      type: 'add' as const
-    },
+      type: 'band',
+      title: 'Banda "Deathcore Brasil" cadastrada',
+      time: '6 horas atrás',
+      icon: Music
+    }
   ]
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  }
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="loading-spinner"></div>
+      </div>
+    )
   }
 
   return (
-    <PageLayout
-      title="Dashboard"
-      subtitle="Visão geral do sistema e estatísticas em tempo real"
-    >
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="space-y-6"
-      >
-        {/* Stats Grid */}
-                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-           {stats.map((stat) => {
-            const Icon = stat.icon
+    <div className="space-y-8">
+      {/* Welcome Header */}
+      <div className="text-center">
+        <h1 className="text-3xl font-bold text-primary mb-2">
+          Bem-vindo ao Painel Administrativo
+        </h1>
+        <p className="text-muted">
+          Gerencie sua rádio Modern Metal com eficiência e controle total
+        </p>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="dashboard-stats">
+        <div className="stat-card">
+          <div className="flex items-center justify-center w-12 h-12 bg-blue-500/10 rounded-lg mb-4 mx-auto">
+            <Clock className="w-6 h-6 text-blue-500" />
+          </div>
+          <div className="stat-number">{stats.totalPrograms}</div>
+          <div className="stat-label">Programas</div>
+        </div>
+
+        <div className="stat-card">
+          <div className="flex items-center justify-center w-12 h-12 bg-purple-500/10 rounded-lg mb-4 mx-auto">
+            <Film className="w-6 h-6 text-purple-500" />
+          </div>
+          <div className="stat-number">{stats.totalMovies}</div>
+          <div className="stat-label">Filmes</div>
+        </div>
+
+        <div className="stat-card">
+          <div className="flex items-center justify-center w-12 h-12 bg-green-500/10 rounded-lg mb-4 mx-auto">
+            <Music className="w-6 h-6 text-green-500" />
+          </div>
+          <div className="stat-number">{stats.totalBands}</div>
+          <div className="stat-label">Bandas</div>
+        </div>
+
+        <div className="stat-card">
+          <div className="flex items-center justify-center w-12 h-12 bg-orange-500/10 rounded-lg mb-4 mx-auto">
+            <Users className="w-6 h-6 text-orange-500" />
+          </div>
+          <div className="stat-number">{stats.activeUsers}</div>
+          <div className="stat-label">Usuários Ativos</div>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="card">
+        <div className="card-header">
+          <h2 className="card-title">Ações Rápidas</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {quickActions.map((action, index) => {
+            const Icon = action.icon
             return (
-              <motion.div key={stat.title} variants={itemVariants}>
-                <Card className="relative overflow-hidden">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-metal-text-secondary mb-1">
-                        {stat.title}
-                      </p>
-                      <p className="text-2xl font-bold text-metal-text">
-                        {stat.value}
-                      </p>
-                      <div className="flex items-center gap-1 mt-2">
-                        {stat.changeType === 'increase' ? (
-                          <ArrowUpRight className="w-4 h-4 text-metal-green" />
-                        ) : (
-                          <ArrowDownRight className="w-4 h-4 text-metal-red" />
-                        )}
-                        <span className={`text-sm font-medium ${
-                          stat.changeType === 'increase' ? 'text-metal-green' : 'text-metal-red'
-                        }`}>
-                          {stat.change}
-                        </span>
-                        <span className="text-sm text-metal-text-secondary">vs mês passado</span>
-                      </div>
-                    </div>
-                    <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
+              <Link
+                key={index}
+                to={action.path}
+                className="group p-6 border border-surface-lighter rounded-xl hover:border-primary/30 transition-all duration-200 hover:shadow-lg"
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`w-12 h-12 ${action.color} rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                    <Icon className="w-6 h-6 text-white" />
                   </div>
-                </Card>
-              </motion.div>
+                  <div>
+                    <h3 className="font-semibold text-primary group-hover:text-primary-light transition-colors">
+                      {action.title}
+                    </h3>
+                    <p className="text-sm text-muted mt-1">
+                      {action.description}
+                    </p>
+                  </div>
+                </div>
+              </Link>
             )
           })}
         </div>
+      </div>
 
-        {/* Quick Actions & Recent Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Quick Actions */}
-          <motion.div variants={itemVariants}>
-            <Card>
-              <CardHeader>
-                <CardTitle>Ações Rápidas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 auto-rows-fr min-h-[120px]">
-                  {quickActions.map((action) => {
-                    const Icon = action.icon
-                    return (
-                      <motion.a
-                        key={action.title}
-                        href={action.href}
-                        className={`h-full p-2.5 rounded-lg border border-metal-border hover:border-metal-orange/30 transition-all duration-200 group ${action.color}`}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        <div className="flex items-start gap-2.5 h-full">
-                          <div className="w-10 h-10 bg-metal-card rounded-lg flex items-center justify-center group-hover:bg-metal-orange/20 transition-colors flex-shrink-0">
-                            <Icon className="w-5 h-5 text-metal-orange" />
-                          </div>
-                          <div className="flex-1 min-w-0 flex flex-col justify-start">
-                                                         <h3 className="font-semibold text-metal-text group-hover:text-metal-orange transition-colors leading-tight text-xs truncate">
-                               {action.title}
-                             </h3>
-                            <p className="text-xs text-metal-text-secondary mt-1 leading-relaxed flex-1">
-                              {action.description}
-                            </p>
-                          </div>
-                        </div>
-                      </motion.a>
-                    )
-                  })}
+      {/* Recent Activity & Quick Stats */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Recent Activity */}
+        <div className="card">
+          <div className="card-header">
+            <h2 className="card-title">Atividade Recente</h2>
+            <Link to="/admin/activity" className="text-sm text-primary hover:text-primary-light">
+              Ver todas
+            </Link>
+          </div>
+          <div className="space-y-4">
+            {recentActivity.map((activity, index) => {
+              const Icon = activity.icon
+              return (
+                <div key={index} className="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-light transition-colors">
+                  <div className="w-8 h-8 bg-surface-light rounded-lg flex items-center justify-center">
+                    <Icon className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{activity.title}</p>
+                    <p className="text-xs text-muted">{activity.time}</p>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Recent Activity */}
-          <motion.div variants={itemVariants}>
-            <Card>
-              <CardHeader>
-                <CardTitle>Atividade Recente</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {recentActivity.map((activity, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-metal-gray/30 transition-colors"
-                    >
-                      <div className="w-8 h-8 bg-metal-gray rounded-full flex items-center justify-center">
-                        <Activity className="w-4 h-4 text-metal-orange" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm text-metal-text">
-                          <span className="font-medium">{activity.action}</span>
-                          <span className="text-metal-text-secondary">: {activity.target}</span>
-                        </p>
-                        <p className="text-xs text-metal-text-secondary mt-1">
-                          {activity.time}
-                        </p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+              )
+            })}
+          </div>
         </div>
 
-        {/* System Status */}
-        <motion.div variants={itemVariants}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Status do Sistema</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-metal-green/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Radio className="w-8 h-8 text-metal-green" />
-                  </div>
-                  <h3 className="font-semibold text-metal-text">Transmissão</h3>
-                  <p className="text-sm text-metal-green">Online</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-metal-accent/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Settings className="w-8 h-8 text-metal-accent" />
-                  </div>
-                  <h3 className="font-semibold text-metal-text">Sistema</h3>
-                  <p className="text-sm text-metal-accent">Operacional</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-metal-orange/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Activity className="w-8 h-8 text-metal-orange" />
-                  </div>
-                  <h3 className="font-semibold text-metal-text">Performance</h3>
-                  <p className="text-sm text-metal-orange">Excelente</p>
-                </div>
+        {/* Quick Stats */}
+        <div className="card">
+          <div className="card-header">
+            <h2 className="card-title">Resumo Rápido</h2>
+          </div>
+          <div className="space-y-6">
+            <div className="flex items-center justify-between p-4 bg-surface-light rounded-lg">
+              <div className="flex items-center gap-3">
+                <TrendingUp className="w-5 h-5 text-green-500" />
+                <span className="text-sm">Programas ao vivo hoje</span>
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </motion.div>
-    </PageLayout>
+              <span className="text-lg font-semibold text-green-500">8</span>
+            </div>
+
+            <div className="flex items-center justify-between p-4 bg-surface-light rounded-lg">
+              <div className="flex items-center gap-3">
+                <Calendar className="w-5 h-5 text-blue-500" />
+                <span className="text-sm">Próximos eventos</span>
+              </div>
+              <span className="text-lg font-semibold text-blue-500">12</span>
+            </div>
+
+            <div className="flex items-center justify-between p-4 bg-surface-light rounded-lg">
+              <div className="flex items-center gap-3">
+                <Play className="w-5 h-5 text-purple-500" />
+                <span className="text-sm">Filmes em destaque</span>
+              </div>
+              <span className="text-lg font-semibold text-purple-500">5</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* System Status */}
+      <div className="card">
+        <div className="card-header">
+          <h2 className="card-title">Status do Sistema</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="text-center p-4">
+            <div className="w-3 h-3 bg-green-500 rounded-full mx-auto mb-2"></div>
+            <p className="text-sm font-medium">API Backend</p>
+            <p className="text-xs text-muted">Online</p>
+          </div>
+          <div className="text-center p-4">
+            <div className="w-3 h-3 bg-green-500 rounded-full mx-auto mb-2"></div>
+            <p className="text-sm font-medium">Banco de Dados</p>
+            <p className="text-xs text-muted">Conectado</p>
+          </div>
+          <div className="text-center p-4">
+            <div className="w-3 h-3 bg-green-500 rounded-full mx-auto mb-2"></div>
+            <p className="text-sm font-medium">Upload de Arquivos</p>
+            <p className="text-xs text-muted">Funcionando</p>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 

@@ -4,27 +4,27 @@ import Header from './components/Header'
 import Hero from './components/Hero'
 import ProgramGrid from './components/ProgramGrid'
 import Filmaço from './components/Filmaço'
-import MosaicGallery from './components/MosaicGallery'
+import BandasDaCena from './components/BandasDaCena'
 import Footer from './components/Footer'
-import { ToastContainer, useToast } from './components/ui/Toast'
+import ToastContainer, { useToast } from './components/ui/Toast'
 
 // Componente para o site principal (landing page)
 const MainSite = () => {
   const { toasts, removeToast } = useToast()
   
   return (
-    <div className="min-h-screen bg-metal-dark">
+    <div className="main-container">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
       >
         <Header />
-        <main id="main-content">
+        <main className="main-content">
           <Hero />
           <ProgramGrid />
           <Filmaço />
-          <MosaicGallery />
+          <BandasDaCena />
         </main>
         <Footer />
         <ToastContainer toasts={toasts} onRemove={removeToast} />
@@ -38,24 +38,26 @@ const BandasPage = () => {
   const { toasts, removeToast } = useToast()
   
   return (
-    <div className="min-h-screen bg-metal-dark">
+    <div className="main-container">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
       >
         <Header />
-        <main id="main-content">
-          <div className="container mx-auto px-4 py-8">
-            <motion.h1 
-              className="text-4xl md:text-6xl font-display text-center text-accent-crimson mb-8"
-              initial={{ y: -50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              🎸 BANDAS DA CENA
-            </motion.h1>
-            <MosaicGallery />
+        <main className="main-content">
+          <div className="section section-hero">
+            <div className="container">
+              <motion.h1 
+                className="heading-1 text-center text-gradient mb-8"
+                initial={{ y: -50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                🎸 BANDAS DA CENA
+              </motion.h1>
+              <BandasDaCena />
+            </div>
           </div>
         </main>
         <Footer />
@@ -70,24 +72,26 @@ const ProgramsPage = () => {
   const { toasts, removeToast } = useToast()
   
   return (
-    <div className="min-h-screen bg-metal-dark">
+    <div className="main-container">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
       >
         <Header />
-        <main id="main-content">
-          <div className="container mx-auto px-4 py-8">
-            <motion.h1 
-              className="text-4xl md:text-6xl font-display text-center text-accent-crimson mb-8"
-              initial={{ y: -50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              📻 PROGRAMAÇÃO
-            </motion.h1>
-            <ProgramGrid />
+        <main className="main-content">
+          <div className="section section-hero">
+            <div className="container">
+              <motion.h1 
+                className="heading-1 text-center text-gradient mb-8"
+                initial={{ y: -50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                📻 PROGRAMAÇÃO
+              </motion.h1>
+              <ProgramGrid />
+            </div>
           </div>
         </main>
         <Footer />
@@ -102,24 +106,26 @@ const FilmesPage = () => {
   const { toasts, removeToast } = useToast()
   
   return (
-    <div className="min-h-screen bg-metal-dark">
+    <div className="main-container">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
       >
         <Header />
-        <main id="main-content">
-          <div className="container mx-auto px-4 py-8">
-            <motion.h1 
-              className="text-4xl md:text-6xl font-display text-center text-accent-crimson mb-8"
-              initial={{ y: -50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              🎬 FILMAÇO
-            </motion.h1>
-            <Filmaço />
+        <main className="main-content">
+          <div className="section section-hero">
+            <div className="container">
+              <motion.h1 
+                className="heading-1 text-center text-gradient mb-8"
+                initial={{ y: -50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                🎬 FILMAÇO
+              </motion.h1>
+              <Filmaço />
+            </div>
           </div>
         </main>
         <Footer />

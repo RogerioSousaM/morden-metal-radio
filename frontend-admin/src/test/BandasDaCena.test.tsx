@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import BandasDaCena from '../../../../frontend-user/src/components/BandasDaCena'
+
+import BandasDaCena from '../../../frontend-user/src/components/BandasDaCena'
 
 // Mock the API service
 vi.mock('../../services/api', () => ({
@@ -11,7 +11,7 @@ vi.mock('../../services/api', () => ({
 }))
 
 // Mock the API service for the user frontend
-vi.mock('../../../../frontend-user/src/services/api', () => ({
+vi.mock('../../../frontend-user/src/services/api', () => ({
   apiService: {
     getBands: vi.fn()
   }
@@ -54,7 +54,7 @@ describe('BandasDaCena Component', () => {
   })
 
   it('should render bandas list when data is loaded', async () => {
-    const { apiService } = await import('../../../../frontend-user/src/services/api')
+    const { apiService } = await import('../../../frontend-user/src/services/api')
     vi.mocked(apiService.getBands).mockResolvedValue(mockBandas)
 
     render(<BandasDaCena />)
@@ -66,7 +66,7 @@ describe('BandasDaCena Component', () => {
   })
 
   it('should display banda information correctly', async () => {
-    const { apiService } = await import('../../../../frontend-user/src/services/api')
+    const { apiService } = await import('../../../frontend-user/src/services/api')
     vi.mocked(apiService.getBands).mockResolvedValue(mockBandas)
 
     render(<BandasDaCena />)
@@ -87,7 +87,7 @@ describe('BandasDaCena Component', () => {
   })
 
   it('should display featured badge for featured bandas', async () => {
-    const { apiService } = await import('../../../../frontend-user/src/services/api')
+    const { apiService } = await import('../../../frontend-user/src/services/api')
     vi.mocked(apiService.getBands).mockResolvedValue(mockBandas)
 
     render(<BandasDaCena />)
@@ -100,7 +100,7 @@ describe('BandasDaCena Component', () => {
   })
 
   it('should handle empty bandas list', async () => {
-    const { apiService } = await import('../../../../frontend-user/src/services/api')
+    const { apiService } = await import('../../../frontend-user/src/services/api')
     vi.mocked(apiService.getBands).mockResolvedValue([])
 
     render(<BandasDaCena />)
@@ -111,7 +111,7 @@ describe('BandasDaCena Component', () => {
   })
 
   it('should handle API errors gracefully', async () => {
-    const { apiService } = await import('../../../../frontend-user/src/services/api')
+    const { apiService } = await import('../../../frontend-user/src/services/api')
     vi.mocked(apiService.getBands).mockRejectedValue(new Error('API Error'))
 
     render(<BandasDaCena />)
@@ -122,7 +122,7 @@ describe('BandasDaCena Component', () => {
   })
 
   it('should display genre tags when available', async () => {
-    const { apiService } = await import('../../../../frontend-user/src/services/api')
+    const { apiService } = await import('../../../frontend-user/src/services/api')
     vi.mocked(apiService.getBands).mockResolvedValue(mockBandas)
 
     render(<BandasDaCena />)
@@ -141,7 +141,7 @@ describe('BandasDaCena Component', () => {
       image_url: null
     }))
 
-    const { apiService } = await import('../../../../frontend-user/src/services/api')
+    const { apiService } = await import('../../../frontend-user/src/services/api')
     vi.mocked(apiService.getBands).mockResolvedValue(bandasWithoutImages)
 
     render(<BandasDaCena />)
@@ -159,7 +159,7 @@ describe('BandasDaCena Component', () => {
       official_url: null
     }))
 
-    const { apiService } = await import('../../../../frontend-user/src/services/api')
+    const { apiService } = await import('../../../frontend-user/src/services/api')
     vi.mocked(apiService.getBands).mockResolvedValue(bandasWithoutUrls)
 
     render(<BandasDaCena />)

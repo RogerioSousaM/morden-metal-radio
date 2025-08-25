@@ -129,4 +129,119 @@ backup/
 
 # Uploads (development)
 uploads/
-temp/ 
+temp/
+
+# ===== PROJETO MORDEN METAL RADIO =====
+
+# Arquivos de teste específicos do projeto
+test-*.js
+test-*.ts
+*-test.js
+*-test.ts
+
+# Arquivos de configuração de teste
+jest.config.js
+vitest.config.ts
+vitest.config.js
+
+# Arquivos de setup de teste
+test-files/
+tests/setup.js
+tests/setup.ts
+
+# Arquivos de execução de banco de dados
+execute-*.js
+run-*.js
+check-*.js
+validate-*.js
+verify-*.js
+fix-*.js
+migrate.js
+backup.js
+
+# Arquivos SQL de teste e desenvolvimento
+*.sql
+!database/complete-setup.sql
+!database/DATABASE.md
+!database/DATABASE_STATUS.md
+
+# Logs de auditoria
+audit-logs/
+*.audit.log
+
+# Arquivos temporários de desenvolvimento
+*.tmp
+*.temp
+temp-*
+tmp-*
+
+# Arquivos de configuração local
+config.local.js
+config.local.ts
+.env.local
+
+# Arquivos de build específicos
+frontend-admin/dist/
+frontend-user/dist/
+backend/dist/
+
+# Arquivos de cache específicos
+.cache/
+.parcel-cache/
+.vite/
+node_modules/.cache/
+
+# Arquivos de lock específicos do projeto
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Arquivos de backup específicos
+*.backup
+*.bak
+*.old
+backup/
+backups/
+
+# Arquivos de upload temporários
+uploads/temp/
+uploads/tmp/
+temp-uploads/
+
+# Arquivos de log específicos
+*.log
+logs/
+log/
+
+# Arquivos de ambiente específicos
+.env.development
+.env.test
+.env.production
+.env.staging
+
+# Arquivos de IDE específicos
+.vscode/settings.json
+.vscode/launch.json
+.vscode/extensions.json
+.idea/workspace.xml
+.idea/modules.xml
+
+# Arquivos de sistema específicos do Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Arquivos de sistema específicos do macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Arquivos de sistema específicos do Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs* 

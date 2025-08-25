@@ -3,8 +3,8 @@ import ActionButton from '../components/ui/ActionButton'
 import SearchBar from '../components/ui/SearchBar'
 import FilterSelect from '../components/ui/FilterSelect'
 import Modal from '../components/ui/Modal'
-import Card, { CardHeader, CardTitle, CardContent, CardActions } from '../components/ui/Card'
-import { Plus, Edit, Trash2, Eye, Calendar, Target, BarChart3 } from 'lucide-react'
+import Card, { CardHeader, CardTitle, CardContent } from '../components/ui/Card'
+import { Plus, Edit, Trash2, Calendar, Target, BarChart3 } from 'lucide-react'
 import { apiService, type Banner } from '../services/api'
 
 interface BannerFormData {
@@ -106,9 +106,15 @@ const BannerManagement: React.FC = () => {
     
     try {
       if (editingBanner) {
-        await apiService.updateBanner(editingBanner.id, formData)
+        await apiService.updateBanner(editingBanner.id, {
+          ...formData,
+          locations: JSON.stringify(formData.locations)
+        })
       } else {
-        await apiService.createBanner(formData)
+        await apiService.createBanner({
+          ...formData,
+          locations: JSON.stringify(formData.locations)
+        })
       }
       
       setIsModalOpen(false)
@@ -197,9 +203,7 @@ const BannerManagement: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Gerenciamento de Banners</h1>
-        <ActionButton onClick={openCreateModal} icon={Plus}>
-          Novo Banner
-        </ActionButton>
+        <ActionButton onClick={openCreateModal} icon={Plus} label="Novo Banner" />
       </div>
 
       {/* Filtros */}
@@ -243,11 +247,13 @@ const BannerManagement: React.FC = () => {
                     onClick={() => handleEdit(banner)}
                     variant="secondary"
                     icon={Edit}
+                    label="Editar"
                   />
                   <ActionButton
                     onClick={() => handleDelete(banner.id)}
                     variant="danger"
                     icon={Trash2}
+                    label="Excluir"
                   />
                 </div>
               </div>

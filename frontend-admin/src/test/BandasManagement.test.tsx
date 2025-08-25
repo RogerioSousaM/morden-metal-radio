@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+
 import BandasManagement from '../pages/BandasManagement'
 
 // Mock the API service
@@ -136,10 +136,7 @@ describe('BandasManagement Component', () => {
   it('should create new banda successfully', async () => {
     const { apiService } = await import('../services/api')
     vi.mocked(apiService.getBands).mockResolvedValue(mockBandas)
-    vi.mocked(apiService.createBand).mockResolvedValue({
-      message: 'Banda criada com sucesso',
-      data: { ...mockBandas[0], id: 2 }
-    })
+    vi.mocked(apiService.createBand).mockResolvedValue({ ...mockBandas[0], id: 2 })
 
     render(<BandasManagement />)
 
@@ -191,7 +188,7 @@ describe('BandasManagement Component', () => {
   it('should delete banda with confirmation', async () => {
     const { apiService } = await import('../services/api')
     vi.mocked(apiService.getBands).mockResolvedValue(mockBandas)
-    vi.mocked(apiService.deleteBand).mockResolvedValue({ message: 'Banda excluída com sucesso' })
+    vi.mocked(apiService.deleteBand).mockResolvedValue(undefined)
 
     render(<BandasManagement />)
 

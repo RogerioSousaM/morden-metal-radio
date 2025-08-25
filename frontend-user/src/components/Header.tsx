@@ -1,234 +1,147 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Music, X } from 'lucide-react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { Menu, X, Volume2 } from 'lucide-react'
 
-const Header: React.FC = () => {
+const Header = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [announcement, setAnnouncement] = useState('')
-  const navigate = useNavigate()
   const location = useLocation()
 
-  // Detectar scroll para comportamento sticky
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
+      setIsScrolled(window.scrollY > 20)
     }
 
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Fechar menu mobile ao clicar em um item
-  const handleNavClick = () => {
-    setIsMobileMenuOpen(false)
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen)
   }
 
-  // Fechar menu mobile ao pressionar ESC
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setIsMobileMenuOpen(false)
-      }
-    }
-
-    if (isMobileMenuOpen) {
-      document.addEventListener('keydown', handleEscape)
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = 'unset'
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleEscape)
-      document.body.style.overflow = 'unset'
-    }
-  }, [isMobileMenuOpen])
-
-  // Função para navegação
-  const handleNavigation = (route: string) => {
-    navigate(route)
-    handleNavClick()
+  const closeMenu = () => {
+    setIsMenuOpen(false)
   }
 
-  // Verificar se a rota está ativa
-  const isActiveRoute = (route: string) => {
-    return location.pathname === route
+  const isActive = (path: string) => {
+    if (path === '/') {
+      return location.pathname === '/'
+    }
+    return location.pathname.startsWith(path)
   }
 
   return (
-    <>
-      {/* Skip Links para acessibilidade */}
-      <nav aria-label="Skip navigation">
-        <a href="#main-content" className="skip-link">
-          Pular para o conteúdo principal
-        </a>
-        <a href="#bandas" className="skip-link">
-          Pular para Bandas da Cena
-        </a>
-      </nav>
-
-      {/* Live Region para anúncios */}
-      <div aria-live="polite" aria-atomic="true" className="live-region">
-        {announcement}
-      </div>
-
-      <header className={`header ${isScrolled ? 'scrolled backdrop-blur-sm bg-black/40 border-b border-metal-light-gray/14' : ''}`}>
-        <div className="header-content">
+    <header className={`header ${isScrolled ? 'scrolled' : ''}`}>
+      <div className="container">
+        <div className="header-container">
           {/* Logo */}
-          <motion.button
-            onClick={() => handleNavigation('/')}
-            className="header-logo"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            aria-label="Página inicial Metalcore"
-          >
-            <Music className="header-logo-icon" />
-            <span className="font-display">METALCORE</span>
-          </motion.button>
+          <Link to="/" className="logo" onClick={closeMenu}>
+            <span className="text-gradient">MODERN METAL</span>
+          </Link>
 
           {/* Desktop Navigation */}
-          <nav className="header-nav">
-            <button 
-              onClick={() => handleNavigation('/bandas')}
-              className={`header-nav-item ${isActiveRoute('/bandas') ? 'active' : ''}`}
+          <nav className="nav-menu hidden md:flex">
+            <Link
+              to="/"
+              className={`nav-link ${isActive('/') ? 'active' : ''}`}
+              onClick={closeMenu}
             >
-              Bandas da Cena
-            </button>
-            <button 
-              onClick={() => handleNavigation('/programs')}
-              className={`header-nav-item ${isActiveRoute('/programs') ? 'active' : ''}`}
+              Início
+            </Link>
+            <Link
+              to="/bandas"
+              className={`nav-link ${isActive('/bandas') ? 'active' : ''}`}
+              onClick={closeMenu}
             >
-              Programas
-            </button>
-            <button 
-              onClick={() => handleNavigation('/filmes')}
-              className={`header-nav-item ${isActiveRoute('/filmes') ? 'active' : ''}`}
+              Bandas
+            </Link>
+            <Link
+              to="/programs"
+              className={`nav-link ${isActive('/programs') ? 'active' : ''}`}
+              onClick={closeMenu}
+            >
+              Programação
+            </Link>
+            <Link
+              to="/filmes"
+              className={`nav-link ${isActive('/filmes') ? 'active' : ''}`}
+              onClick={closeMenu}
             >
               Filmaço
-            </button>
+            </Link>
           </nav>
 
-          {/* Header Actions */}
-          <div className="header-actions">
-            {/* Primary CTA */}
-            <motion.a
-              href="#listen-live"
-              className="btn-accent-base touch-target"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              aria-label="Ouvir rádio ao vivo"
-              onFocus={() => setAnnouncement('Botão Listen Live focado')}
-            >
-              🎧 Listen Live Now
-            </motion.a>
-
-            {/* Mini Player Icon */}
-            <motion.button
-              className="header-player touch-target"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              aria-label="Abrir player de música"
-              onFocus={() => setAnnouncement('Player de música focado')}
-            >
-              <Music size={20} />
-            </motion.button>
-
-            {/* Mobile Menu Toggle */}
-            <button
-              className="mobile-menu-toggle touch-target"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              aria-label="Abrir menu de navegação"
-              aria-expanded={isMobileMenuOpen}
-              onFocus={() => setAnnouncement('Menu de navegação focado')}
-            >
-              <span></span>
-              <span></span>
-              <span></span>
-            </button>
+          {/* Live Radio Indicator */}
+          <div className="live-radio hidden md:flex">
+            <div className="live-dot"></div>
+            <span className="text-sm font-medium">AO VIVO</span>
+            <Volume2 className="w-4 h-4 ml-2" />
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            className="mobile-menu-btn md:hidden"
+            onClick={toggleMenu}
+            aria-label="Toggle menu"
+          >
+            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
         </div>
-      </header>
 
-      {/* Mobile Slide-over Menu */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsMobileMenuOpen(false)}
-            />
-
-            {/* Menu */}
-            <motion.div
-              className="mobile-menu"
-              initial={{ right: '-100%' }}
-              animate={{ right: 0 }}
-              exit={{ right: '-100%' }}
-              transition={{ type: 'tween', duration: 0.3 }}
+        {/* Mobile Navigation */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.nav
+              className="mobile-nav md:hidden"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
             >
-              {/* Menu Header */}
-              <div className="mobile-menu-header">
-                <button 
-                  onClick={() => handleNavigation('/')}
-                  className="header-logo"
+              <div className="mobile-nav-content">
+                <Link
+                  to="/"
+                  className={`mobile-nav-link ${isActive('/') ? 'active' : ''}`}
+                  onClick={closeMenu}
                 >
-                  <Music className="header-logo-icon" />
-                  <span>METALCORE</span>
-                </button>
-                <button
-                  className="mobile-menu-close"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  aria-label="Fechar menu"
+                  Início
+                </Link>
+                <Link
+                  to="/bandas"
+                  className={`mobile-nav-link ${isActive('/bandas') ? 'active' : ''}`}
+                  onClick={closeMenu}
                 >
-                  <X size={24} />
-                </button>
+                  Bandas
+                </Link>
+                <Link
+                  to="/programs"
+                  className={`mobile-nav-link ${isActive('/programs') ? 'active' : ''}`}
+                  onClick={closeMenu}
+                >
+                  Programação
+                </Link>
+                <Link
+                  to="/filmes"
+                  className={`mobile-nav-link ${isActive('/filmes') ? 'active' : ''}`}
+                  onClick={closeMenu}
+                >
+                  Filmaço
+                </Link>
+                
+                {/* Mobile Live Radio */}
+                <div className="mobile-live-radio">
+                  <div className="live-dot"></div>
+                  <span className="text-sm font-medium">AO VIVO</span>
+                  <Volume2 className="w-4 h-4 ml-2" />
+                </div>
               </div>
-
-              {/* Mobile Navigation */}
-              <nav className="mobile-nav">
-                <button
-                  onClick={() => handleNavigation('/bandas')}
-                  className={`mobile-nav-item ${isActiveRoute('/bandas') ? 'active' : ''}`}
-                >
-                  🎸 Bandas da Cena
-                </button>
-                <button
-                  onClick={() => handleNavigation('/programs')}
-                  className={`mobile-nav-item ${isActiveRoute('/programs') ? 'active' : ''}`}
-                >
-                  📻 Programas
-                </button>
-                <button
-                  onClick={() => handleNavigation('/filmes')}
-                  className={`mobile-nav-item ${isActiveRoute('/filmes') ? 'active' : ''}`}
-                >
-                  🎬 Filmaço
-                </button>
-              </nav>
-
-              {/* Mobile CTA */}
-              <div className="mt-8 pt-6 border-t border-metal-edge">
-                <motion.a
-                  href="#listen-live"
-                  className="header-cta w-full text-center justify-center"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleNavClick}
-                >
-                  🎧 Listen Live Now
-                </motion.a>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </>
+            </motion.nav>
+          )}
+        </AnimatePresence>
+      </div>
+    </header>
   )
 }
 

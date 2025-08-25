@@ -1,162 +1,187 @@
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Link, useLocation } from 'react-router-dom'
-import {
-  LayoutDashboard, Calendar, Users, 
-  Image, Share2, Settings, LogOut, Menu, X,
-  Radio, FolderOpen, Film, Music
+import React, { useState, useEffect } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { 
+  Menu, 
+  X, 
+  Home, 
+  Clock, 
+  Film, 
+  Music, 
+  Settings, 
+  LogOut,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
 
 interface AdminLayoutProps {
   children: React.ReactNode
-  onLogout: () => void
 }
 
-const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
 
-  // Close sidebar on mobile when route changes
+  // Close mobile menu when route changes
   useEffect(() => {
-    if (window.innerWidth < 1024) {
-      setSidebarOpen(false)
-    }
+    setIsMobileMenuOpen(false)
   }, [location.pathname])
 
-  const navigation = [
-    { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-    { name: 'Programação', href: '/admin/schedule', icon: Calendar },
-    { name: 'Arquivos', href: '/admin/files', icon: FolderOpen },
-    { name: 'Usuários', href: '/admin/users', icon: Users },
-    { name: 'Carrossel', href: '/admin/carousel', icon: Image },
-    { name: 'Filmes', href: '/admin/filmes', icon: Film },
-    { name: 'Banners', href: '/admin/banners', icon: Image },
-{ name: 'Bandas da Cena', href: '/admin/bandas', icon: Music },
-    { name: 'Redes Sociais', href: '/admin/social-links', icon: Share2 },
-    { name: 'Configurações', href: '/admin/settings', icon: Settings },
-  ]
-
   const handleLogout = () => {
+    // Clear any stored authentication data
     localStorage.removeItem('adminToken')
     localStorage.removeItem('adminUser')
-    onLogout()
+    navigate('/login')
   }
 
+  const isActiveRoute = (path: string) => {
+    return location.pathname === path
+  }
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed)
+  }
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen)
+  }
+
+  const navItems = [
+    {
+      path: '/admin',
+      icon: Home,
+      label: 'Dashboard',
+      description: 'Visão geral do sistema'
+    },
+    {
+      path: '/admin/programs',
+      icon: Clock,
+      label: 'Programação',
+      description: 'Gerenciar horários e programas'
+    },
+    {
+      path: '/admin/movies',
+      icon: Film,
+      label: 'Filmaço',
+      description: 'Gerenciar filmes e eventos'
+    },
+    {
+      path: '/admin/bands',
+      icon: Music,
+      label: 'Bandas da Cena',
+      description: 'Gerenciar bandas e descrições'
+    }
+  ]
+
   return (
-    <div className="min-h-screen bg-metal-dark flex">
-      {/* Mobile sidebar overlay */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
-      </AnimatePresence>
-
+    <div className="admin-container">
       {/* Sidebar */}
-      <aside className={`
-        fixed lg:static inset-y-0 left-0 z-50 w-72 bg-metal-card border-r border-metal-border
-        transform transition-transform duration-300 ease-in-out
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-metal-border">
-            <Link to="/admin/dashboard" className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-metal-orange to-metal-accent rounded-lg flex items-center justify-center">
-                <Radio className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-gradient">Morden Metal</h1>
-                <p className="text-xs text-metal-text-secondary">Admin Panel</p>
-              </div>
-            </Link>
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2 text-metal-text-secondary hover:text-metal-orange transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+      <aside className={`admin-sidebar ${isSidebarCollapsed ? 'collapsed' : ''} ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+        {/* Sidebar Header */}
+        <div className="sidebar-header">
+          <div className="sidebar-logo">
+            {!isSidebarCollapsed && 'Modern Metal Admin'}
           </div>
+        </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-            {navigation.map((item) => {
-              const isActive = location.pathname === item.href
+        {/* Navigation */}
+        <nav className="sidebar-nav">
+          <div className="nav-section">
+            <div className="nav-section-title">Administração</div>
+            {navItems.map((item) => {
               const Icon = item.icon
-              
               return (
                 <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`nav-link ${isActive ? 'active' : ''}`}
+                  key={item.path}
+                  to={item.path}
+                  className={`nav-item ${isActiveRoute(item.path) ? 'active' : ''}`}
+                  title={isSidebarCollapsed ? item.label : undefined}
                 >
-                  <Icon className="w-5 h-5" />
-                  <span className="font-medium">{item.name}</span>
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeTab"
-                      className="absolute right-0 w-1 h-8 bg-metal-orange rounded-l-full"
-                    />
+                  <Icon className="nav-item-icon" />
+                  {!isSidebarCollapsed && (
+                    <div>
+                      <div className="font-medium">{item.label}</div>
+                      <div className="text-xs text-muted">{item.description}</div>
+                    </div>
                   )}
                 </Link>
               )
             })}
-          </nav>
-
-          {/* Footer */}
-          <div className="p-4 border-t border-metal-border">
-            <button
-              onClick={handleLogout}
-              className="w-full nav-link text-metal-red hover:text-red-400"
-            >
-              <LogOut className="w-5 h-5" />
-              <span className="font-medium">Sair</span>
-            </button>
           </div>
+
+          {/* Settings Section */}
+          <div className="nav-section">
+            <div className="nav-section-title">Sistema</div>
+            <Link
+              to="/admin/settings"
+              className={`nav-item ${isActiveRoute('/admin/settings') ? 'active' : ''}`}
+              title={isSidebarCollapsed ? 'Configurações' : undefined}
+            >
+              <Settings className="nav-item-icon" />
+              {!isSidebarCollapsed && 'Configurações'}
+            </Link>
+          </div>
+        </nav>
+
+        {/* Logout Button */}
+        <div className="p-6 mt-auto">
+          <button
+            onClick={handleLogout}
+            className="nav-item w-full text-left"
+            title={isSidebarCollapsed ? 'Sair' : undefined}
+          >
+            <LogOut className="nav-item-icon" />
+            {!isSidebarCollapsed && 'Sair'}
+          </button>
         </div>
       </aside>
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col">
-        {/* Top bar */}
-        <header className="bg-metal-card border-b border-metal-border px-6 py-4">
+      {/* Main Content */}
+      <main className={`admin-main ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+        {/* Header */}
+        <header className="admin-header">
           <div className="flex items-center justify-between">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 text-metal-text-secondary hover:text-metal-orange transition-colors"
-            >
-              <Menu className="w-6 h-6" />
-            </button>
-            
             <div className="flex items-center gap-4">
-              <div className="hidden sm:flex items-center gap-2 text-sm text-metal-text-secondary">
-                <span>Admin</span>
-                <span>•</span>
-                <span>{navigation.find(item => item.href === location.pathname)?.name || 'Dashboard'}</span>
+              {/* Mobile Menu Toggle */}
+              <button
+                onClick={toggleMobileMenu}
+                className="mobile-menu-toggle lg:hidden"
+                aria-label="Toggle mobile menu"
+              >
+                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+
+              {/* Desktop Sidebar Toggle */}
+              <button
+                onClick={toggleSidebar}
+                className="hidden lg:flex items-center justify-center w-10 h-10 rounded-lg bg-surface-light hover:bg-surface-lighter transition-colors"
+                aria-label="Toggle sidebar"
+              >
+                {isSidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+              </button>
+
+              {/* Page Title */}
+              <h1 className="text-xl font-semibold text-primary">
+                {navItems.find(item => isActiveRoute(item.path))?.label || 'Admin'}
+              </h1>
+            </div>
+
+            {/* User Info */}
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <div className="text-sm font-medium">Administrador</div>
+                <div className="text-xs text-muted">admin@modernmetal.com</div>
               </div>
             </div>
           </div>
         </header>
 
-        {/* Page content */}
-        <main className="flex-1 overflow-auto">
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="h-full"
-          >
-            {children}
-          </motion.div>
-        </main>
-      </div>
+        {/* Page Content */}
+        <div className="admin-content">
+          {children}
+        </div>
+      </main>
     </div>
   )
 }

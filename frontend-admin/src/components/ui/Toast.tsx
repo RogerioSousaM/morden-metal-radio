@@ -16,11 +16,8 @@ interface ToastProps {
 }
 
 const ToastItem: React.FC<ToastProps> = ({ toast, onRemove }) => {
-  const [isVisible, setIsVisible] = useState(true)
-
   useEffect(() => {
     const timer = setTimeout(() => {
-      setIsVisible(false)
       setTimeout(() => onRemove(toast.id), 300)
     }, toast.duration || 5000)
 

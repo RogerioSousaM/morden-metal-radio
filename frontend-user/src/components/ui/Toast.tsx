@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react'
 
@@ -17,7 +17,7 @@ interface ToastProps {
   onRemove: (id: string) => void
 }
 
-const ToastItem: React.FC<ToastProps> = ({ toast, onRemove }) => {
+const ToastItem = ({ toast, onRemove }: ToastProps) => {
   const [isVisible, setIsVisible] = useState(true)
 
   useEffect(() => {
@@ -32,45 +32,30 @@ const ToastItem: React.FC<ToastProps> = ({ toast, onRemove }) => {
   const getIcon = () => {
     switch (toast.type) {
       case 'success':
-        return <CheckCircle className="w-5 h-5 text-green-500" />
+        return <CheckCircle className="w-5 h-5 text-success" />
       case 'error':
-        return <AlertCircle className="w-5 h-5 text-red-500" />
+        return <AlertCircle className="w-5 h-5 text-error" />
       case 'warning':
-        return <AlertCircle className="w-5 h-5 text-yellow-500" />
+        return <AlertCircle className="w-5 h-5 text-warning" />
       case 'info':
-        return <Info className="w-5 h-5 text-blue-500" />
+        return <Info className="w-5 h-5 text-info" />
       default:
-        return <Info className="w-5 h-5 text-blue-500" />
+        return <Info className="w-5 h-5 text-info" />
     }
   }
 
-  const getBgColor = () => {
+  const getToastStyle = () => {
     switch (toast.type) {
       case 'success':
-        return 'bg-green-50 border-green-200'
+        return 'bg-success/10 border-success/20 text-success'
       case 'error':
-        return 'bg-red-50 border-red-200'
+        return 'bg-error/10 border-error/20 text-error'
       case 'warning':
-        return 'bg-yellow-50 border-yellow-200'
+        return 'bg-warning/10 border-warning/20 text-warning'
       case 'info':
-        return 'bg-blue-50 border-blue-200'
+        return 'bg-info/10 border-info/20 text-info'
       default:
-        return 'bg-blue-50 border-blue-200'
-    }
-  }
-
-  const getTextColor = () => {
-    switch (toast.type) {
-      case 'success':
-        return 'text-green-800'
-      case 'error':
-        return 'text-red-800'
-      case 'warning':
-        return 'text-yellow-800'
-      case 'info':
-        return 'text-blue-800'
-      default:
-        return 'text-blue-800'
+        return 'bg-info/10 border-info/20 text-info'
     }
   }
 
@@ -82,16 +67,16 @@ const ToastItem: React.FC<ToastProps> = ({ toast, onRemove }) => {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -50, scale: 0.9 }}
           transition={{ duration: 0.3 }}
-          className={`fixed top-4 right-4 z-50 max-w-sm w-full p-4 rounded-lg border shadow-lg ${getBgColor()}`}
+          className={`fixed top-4 right-4 z-50 max-w-sm w-full p-4 rounded-lg border shadow-lg bg-surface border-surface-lighter ${getToastStyle()}`}
         >
           <div className="flex items-start gap-3">
             {getIcon()}
             <div className="flex-1 min-w-0">
-              <h4 className={`text-sm font-medium ${getTextColor()}`}>
+              <h4 className="text-sm font-medium">
                 {toast.title}
               </h4>
               {toast.message && (
-                <p className={`text-sm mt-1 ${getTextColor()} opacity-90`}>
+                <p className="text-sm mt-1 opacity-90">
                   {toast.message}
                 </p>
               )}
@@ -101,7 +86,7 @@ const ToastItem: React.FC<ToastProps> = ({ toast, onRemove }) => {
                 setIsVisible(false)
                 setTimeout(() => onRemove(toast.id), 300)
               }}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-muted hover:text-primary transition-colors"
               aria-label="Fechar notificação"
             >
               <X className="w-4 h-4" />
@@ -113,13 +98,28 @@ const ToastItem: React.FC<ToastProps> = ({ toast, onRemove }) => {
   )
 }
 
-// Hook para gerenciar toasts
+interface ToastContainerProps {
+  toasts: Toast[]
+  onRemove: (id: string) => void
+}
+
+const ToastContainer = ({ toasts, onRemove }: ToastContainerProps) => {
+  return (
+    <div className="fixed top-4 right-4 z-50 space-y-2">
+      {toasts.map((toast) => (
+        <ToastItem key={toast.id} toast={toast} onRemove={onRemove} />
+      ))}
+    </div>
+  )
+}
+
+// Hook para usar o sistema de toast
 export const useToast = () => {
   const [toasts, setToasts] = useState<Toast[]>([])
 
-  const addToast = (toast: Omit<Toast, 'id'>) => {
+  const addToast = (type: ToastType, title: string, message?: string, duration?: number) => {
     const id = Math.random().toString(36).substr(2, 9)
-    const newToast = { ...toast, id }
+    const newToast: Toast = { id, type, title, message, duration }
     setToasts(prev => [...prev, newToast])
   }
 
@@ -128,38 +128,29 @@ export const useToast = () => {
   }
 
   const showSuccess = (title: string, message?: string) => {
-    addToast({ type: 'success', title, message })
+    addToast('success', title, message)
   }
 
   const showError = (title: string, message?: string) => {
-    addToast({ type: 'error', title, message })
-  }
-
-  const showInfo = (title: string, message?: string) => {
-    addToast({ type: 'info', title, message })
+    addToast('error', title, message)
   }
 
   const showWarning = (title: string, message?: string) => {
-    addToast({ type: 'warning', title, message })
+    addToast('warning', title, message)
+  }
+
+  const showInfo = (title: string, message?: string) => {
+    addToast('info', title, message)
   }
 
   return {
     toasts,
+    removeToast,
     showSuccess,
     showError,
-    showInfo,
     showWarning,
-    removeToast
+    showInfo
   }
 }
 
-// Componente Toast Container
-export const ToastContainer: React.FC<{ toasts: Toast[]; onRemove: (id: string) => void }> = ({ toasts, onRemove }) => {
-  return (
-    <>
-      {toasts.map(toast => (
-        <ToastItem key={toast.id} toast={toast} onRemove={onRemove} />
-      ))}
-    </>
-  )
-}
+export default ToastContainer
